@@ -28,6 +28,18 @@ export function getSupabaseAnonKey() {
   return value;
 }
 
+export function getSupabaseServiceRoleKey() {
+  return requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+}
+
+export function getAppBaseUrl() {
+  return process.env.APP_BASE_URL?.trim() || "http://localhost:3000";
+}
+
+export function getTelegramTokenEncryptionSecret() {
+  return requireEnv("TELEGRAM_TOKEN_ENCRYPTION_SECRET");
+}
+
 export function getSuperAdminEmails() {
   return (process.env.SUPER_ADMIN_EMAILS ?? "")
     .split(",")

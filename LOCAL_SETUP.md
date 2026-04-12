@@ -125,6 +125,8 @@ For local Supabase development, it should look like:
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=PASTE_ANON_KEY_FROM_SUPABASE_STATUS
 SUPABASE_SERVICE_ROLE_KEY=PASTE_SERVICE_ROLE_KEY_FROM_SUPABASE_STATUS
+APP_BASE_URL=http://localhost:3000
+TELEGRAM_TOKEN_ENCRYPTION_SECRET=replace-with-a-local-dev-secret
 SUPER_ADMIN_EMAILS=owner@example.com
 DEMO_HOTEL_ID=11111111-1111-1111-1111-111111111111
 DEMO_HOTEL_NAME=Demo Hotel
@@ -223,6 +225,12 @@ Recreate demo auth user/membership:
 
 ```powershell
 npm.cmd run demo:bootstrap
+```
+
+Run the PH1-02 helper sanity check:
+
+```powershell
+npm.cmd run test:ph1-02
 ```
 
 ## Important Notes

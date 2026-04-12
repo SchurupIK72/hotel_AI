@@ -8,6 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test:ph1-01": "node --experimental-strip-types ./tests/ph1-01/run-checks.ts",
+    "test:ph1-02": "node --experimental-strip-types ./tests/ph1-02/run-checks.ts",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",

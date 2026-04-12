@@ -3,7 +3,7 @@
 > **Created:** 2026-04-12
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** Draft
+> **Status:** In Progress
 > **Depends on:** PH1-01 - Tenant Foundation and Staff Access
 
 ---
@@ -433,6 +433,32 @@ This feature is complete only if:
 - verify no client-facing response contains raw bot token;
 - verify logs contain only sanitized Telegram errors;
 - verify integration access is restricted to the correct hotel.
+
+## Implementation Progress
+
+- [x] `channel_integrations` schema, indexes, uniqueness constraints, and RLS added
+- [x] server-only service-role Supabase client added for protected integration operations
+- [x] token encryption/decryption helper added for Telegram bot secret storage
+- [x] shared runtime contracts implemented via `getActiveTelegramIntegration(...)` and `getTelegramClientConfig(...)`
+- [x] Telegram API helper added for `getMe`/`sendMessage` with sanitized error handling
+- [x] protected admin-only Telegram settings status page added at `/dashboard/settings/telegram`
+- [x] hotel-admin write flow added for create and rotate with server-side verify via Telegram `getMe`
+- [x] verification success and sanitized failure state now persist through the Telegram integration save flow
+- [x] admin form UI added for saving bot token without exposing the stored secret afterward
+- [x] deactivate action for hotel admins
+- [x] stable webhook URL output and manual setup instructions added to the Telegram settings page
+- [x] reserved webhook route contract added at `/api/webhooks/telegram/[webhookPathToken]`
+- [ ] richer inactive-history review and operational webhook diagnostics
+
+## Verification Commands
+
+Run these checks locally after migrations are applied:
+
+```bash
+npm run typecheck
+npm run test:ph1-02
+npm run supabase:reset
+```
 
 ---
 

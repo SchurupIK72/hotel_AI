@@ -31,6 +31,11 @@ input {
   font: inherit;
 }
 
+input,
+textarea {
+  font: inherit;
+}
+
 .page-shell {
   min-height: 100vh;
   display: flex;
@@ -130,6 +135,12 @@ input {
   font-size: 14px;
 }
 
+.success-text {
+  margin: 0;
+  color: #1f6a43;
+  font-size: 14px;
+}
+
 .dashboard-shell {
   min-height: 100vh;
   display: grid;
@@ -169,7 +180,11 @@ input {
   font-size: 18px;
 }
 
+.section-title {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
 .mono {
   font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 }
-

@@ -94,6 +94,8 @@ function Write-EnvFile {
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         "SUPABASE_SERVICE_ROLE_KEY",
+        "APP_BASE_URL",
+        "TELEGRAM_TOKEN_ENCRYPTION_SECRET",
         "SUPER_ADMIN_EMAILS",
         "DEMO_HOTEL_ID",
         "DEMO_HOTEL_NAME",
@@ -217,6 +219,11 @@ try {
     $mergedEnv["NEXT_PUBLIC_SUPABASE_URL"] = "http://127.0.0.1:54321"
     $mergedEnv["NEXT_PUBLIC_SUPABASE_ANON_KEY"] = $statusVars["ANON_KEY"]
     $mergedEnv["SUPABASE_SERVICE_ROLE_KEY"] = $statusVars["SERVICE_ROLE_KEY"]
+    $mergedEnv["APP_BASE_URL"] = "http://localhost:3000"
+
+    if (-not $mergedEnv.ContainsKey("TELEGRAM_TOKEN_ENCRYPTION_SECRET")) {
+        $mergedEnv["TELEGRAM_TOKEN_ENCRYPTION_SECRET"] = "local-dev-telegram-secret"
+    }
 
     if (-not $mergedEnv.ContainsKey("SUPER_ADMIN_EMAILS")) {
         $mergedEnv["SUPER_ADMIN_EMAILS"] = "owner@example.com"
