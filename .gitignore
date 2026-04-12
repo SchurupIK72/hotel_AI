@@ -1,9 +1,19 @@
 .next/
 node_modules/
+
+# Local environment secrets
 .env
 .env.local
 .env.*.local
-.env.example
+
+# Repo-local Codex machine settings
+.codex/settings.local.json
+
+# Supabase local CLI/runtime metadata
+supabase/.temp/
+supabase/.branches/
+
+# Build/test artifacts
 coverage/
 dist/
 tsconfig.tsbuildinfo

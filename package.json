@@ -7,11 +7,13 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "test:ph1-01": "node --experimental-strip-types ./tests/ph1-01/run-checks.ts",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
     "supabase:status:env": "supabase status -o env",
     "demo:bootstrap": "node ./scripts/bootstrap-local-demo.mjs",
+    "verify:ph1-01": "node ./scripts/verify-ph1-01-smoke.mjs",
     "dev:setup": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1",
     "dev:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-stop.ps1"
   },

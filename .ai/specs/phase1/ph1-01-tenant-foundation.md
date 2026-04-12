@@ -3,7 +3,7 @@
 > **Created:** 2026-04-12
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** Draft
+> **Status:** In Progress
 > **Depends on:** none
 
 ---
@@ -408,6 +408,26 @@ This feature is complete only if:
 - verify client code never receives service-role secrets;
 - verify tenant scope is server-resolved, not client-authoritative;
 - verify foreign-tenant access does not leak resource existence.
+
+## Implementation Progress
+
+- [x] `hotels` and `hotel_users` schema, indexes, and base RLS added
+- [x] auth/session resolution and tenant access guards implemented
+- [x] `hotel_admin` same-hotel staff visibility aligned with spec-level RLS requirements
+- [x] minimal auth foundation checks added via `npm run test:ph1-01`
+- [x] local Supabase smoke verification added via `npm run verify:ph1-01`
+- [ ] super-admin path explicitly verified end-to-end
+- [ ] broader route/API integration tests beyond smoke verification
+
+## Verification Commands
+
+Run these before starting PH1-02 on a local environment:
+
+```bash
+npm run typecheck
+npm run test:ph1-01
+npm run verify:ph1-01
+```
 
 ---
 
