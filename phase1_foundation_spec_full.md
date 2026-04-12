@@ -645,6 +645,10 @@ Phase 1 is complete only if:
 
 ## 17. Backlog by Epic
 
+Feature-level decomposition for this phase:
+
+- [feature-decomposition.md](/c:/REPO/hotelAI/.ai/specs/phase1/feature-decomposition.md)
+
 ### Epic A - Project setup
 
 - initialize Next.js app;

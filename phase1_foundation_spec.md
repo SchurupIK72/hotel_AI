@@ -52,3 +52,5 @@ Phase 1 is the AI Copilot release, not an infra-only milestone.
 ## Reference
 
 Full decision-complete specification: [phase1_foundation_spec_full.md](/c:/REPO/hotelAI/phase1_foundation_spec_full.md)
+
+Feature decomposition for future per-feature specs: [feature-decomposition.md](/c:/REPO/hotelAI/.ai/specs/phase1/feature-decomposition.md)
