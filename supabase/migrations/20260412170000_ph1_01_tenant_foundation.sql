@@ -66,23 +66,15 @@ using (
   )
 );
 
+drop policy if exists "hotel_users_can_read_own_membership" on public.hotel_users;
 drop policy if exists "hotel_users_can_read_their_membership_or_admin_view" on public.hotel_users;
-create policy "hotel_users_can_read_their_membership_or_admin_view"
+create policy "hotel_users_can_read_own_membership"
 on public.hotel_users
 for select
 to authenticated
 using (
   hotel_users.auth_user_id = auth.uid()
-  or exists (
-    select 1
-    from public.hotel_users as current_hotel_user
-    where current_hotel_user.auth_user_id = auth.uid()
-      and current_hotel_user.is_active = true
-      and current_hotel_user.hotel_id = hotel_users.hotel_id
-      and current_hotel_user.role = 'hotel_admin'
-  )
 );
 
 comment on table public.hotels is 'Tenant root entity for hotel-scoped data.';
 comment on table public.hotel_users is 'Maps authenticated staff users to hotel-scoped roles.';
-

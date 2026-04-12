@@ -16,6 +16,7 @@ export function SignInForm() {
     setErrorMessage(null);
 
     const supabase = createBrowserSupabaseClient();
+    await supabase.auth.signOut({ scope: "local" });
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
@@ -66,4 +67,3 @@ export function SignInForm() {
     </form>
   );
 }
-

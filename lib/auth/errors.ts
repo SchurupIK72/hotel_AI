@@ -12,3 +12,16 @@ export class AuthorizationError extends Error {
   }
 }
 
+export function isMissingAuthSessionError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+
+  return (
+    error.name === "AuthSessionMissingError" ||
+    message.includes("auth session missing") ||
+    message.includes("user from sub claim in jwt does not exist")
+  );
+}

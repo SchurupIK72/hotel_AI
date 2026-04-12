@@ -1,5 +1,9 @@
 import { cache } from "react";
-import { AuthenticationRequiredError, AuthorizationError } from "@/lib/auth/errors";
+import {
+  AuthenticationRequiredError,
+  AuthorizationError,
+  isMissingAuthSessionError,
+} from "@/lib/auth/errors";
 import type { AccessContext, SuperAdminAccessContext } from "@/lib/auth/types";
 import { findActiveHotelMembershipByAuthUserId } from "@/lib/db/hotel-users";
 import { getSuperAdminEmails } from "@/lib/env";
@@ -13,6 +17,10 @@ export const getAuthenticatedUser = cache(async () => {
   } = await supabase.auth.getUser();
 
   if (error) {
+    if (isMissingAuthSessionError(error)) {
+      throw new AuthenticationRequiredError();
+    }
+
     throw error;
   }
 
@@ -67,4 +75,3 @@ export const getAccessContext = cache(async (): Promise<AccessContext> => {
     hotelRole: membership.hotelRole,
   };
 });
-
