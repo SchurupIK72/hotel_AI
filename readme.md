@@ -330,6 +330,14 @@ This repository is intended for a real product, but an implementation should con
 
 ---
 
+## Codex skills
+
+Custom repo-local Codex skills live in `.codex/skills`.
+
+To install or refresh them in the global Codex runtime directory, use [docs/codex-local-skills.md](/c:/REPO/hotelAI/docs/codex-local-skills.md).
+
+---
+
 ## Environment variables
 
 Example categories:
