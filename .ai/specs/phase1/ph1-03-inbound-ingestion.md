@@ -656,6 +656,8 @@ This feature is complete only if:
 - [x] minimal helper verification added via `npm run test:ph1-03`
 - [x] local end-to-end smoke verification added via `npm run verify:ph1-03`
 - [x] structured ingestion events persisted for webhook receive/reject/ignore and guest/conversation/message outcomes
+- [x] route-level validation helpers and checks added for invalid secret, inactive integration, and malformed payload handling
+- [x] dependency-injected webhook handler and route integration checks added for success and rejection scenarios
 
 ## Verification Commands
 
