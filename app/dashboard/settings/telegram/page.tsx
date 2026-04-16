@@ -90,13 +90,13 @@ export default async function TelegramSettingsPage({ searchParams }: TelegramSet
           <h2>Manual Telegram webhook setup</h2>
           <div className="stack">
             <p className="body-copy">
-              This endpoint is currently marked as <span className="mono">reserved_endpoint_only</span>.
-              It can be pre-registered in Telegram, but it is not a live inbox ingestion endpoint until PH1-03.
+              This endpoint is currently marked as <span className="mono">live_inbound_ingestion</span>.
+              After Telegram webhook registration, supported inbound text messages should now enter the Phase 1 inbox pipeline.
             </p>
             <p className="body-copy mono mono-wrap">{webhookEndpoint.webhookUrl}</p>
             <p className="body-copy">
-              If you save a webhook secret, pass it as Telegram `secret_token`. The route currently
-              validates integration identity and optional secret token only; it does not persist guest messages yet.
+              If you save a webhook secret, pass it as Telegram `secret_token`. Phase 1 currently ingests
+              supported text messages only; media and advanced Telegram update types are still ignored safely.
             </p>
           </div>
         </article>

@@ -233,6 +233,18 @@ Run the PH1-02 helper sanity check:
 npm.cmd run test:ph1-02
 ```
 
+Run the PH1-03 helper sanity check:
+
+```powershell
+npm.cmd run test:ph1-03
+```
+
+Run the PH1-03 live smoke verification against local Supabase:
+
+```powershell
+npm.cmd run verify:ph1-03
+```
+
 ## Important Notes
 
 - `supabase/seed.sql` is used for reproducible database seed data.
