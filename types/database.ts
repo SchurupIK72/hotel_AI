@@ -276,6 +276,38 @@ export type Database = {
           created_at?: string;
         };
       };
+      event_logs: {
+        Row: {
+          id: string;
+          hotel_id: string | null;
+          integration_id: string | null;
+          event_type: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          hotel_id?: string | null;
+          integration_id?: string | null;
+          event_type: string;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          payload?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          hotel_id?: string | null;
+          integration_id?: string | null;
+          event_type?: string;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          payload?: Json;
+          created_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

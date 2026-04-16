@@ -1,6 +1,7 @@
 import { createServiceRoleSupabaseClient } from "../supabase/admin.ts";
 import type { Json, Database } from "../../types/database.ts";
 import type { ActiveTelegramIntegration } from "./integrations.ts";
+import { createEventLogSafely } from "../events/event-logs.ts";
 
 type GuestRow = Database["public"]["Tables"]["guests"]["Row"];
 type ConversationRow = Database["public"]["Tables"]["conversations"]["Row"];
@@ -151,7 +152,7 @@ async function resolveOrCreateGuest(input: ParsedInboundTelegramTextMessage) {
       .select("*")
       .single();
     if (error) throw error;
-    return data as GuestRow;
+    return { guest: data as GuestRow, wasCreated: false as const };
   }
 
   const { data, error } = await supabase
@@ -167,7 +168,7 @@ async function resolveOrCreateGuest(input: ParsedInboundTelegramTextMessage) {
     .select("*")
     .single();
   if (error) throw error;
-  return data as GuestRow;
+  return { guest: data as GuestRow, wasCreated: true as const };
 }
 
 async function resolveOrCreateConversation(input: ParsedInboundTelegramTextMessage, guestId: string) {
@@ -183,7 +184,7 @@ async function resolveOrCreateConversation(input: ParsedInboundTelegramTextMessa
     .maybeSingle();
 
   if (selectError) throw selectError;
-  if (existing) return existing as ConversationRow;
+  if (existing) return { conversation: existing as ConversationRow, wasCreated: false as const };
 
   const { data, error } = await supabase
     .from("conversations")
@@ -200,7 +201,7 @@ async function resolveOrCreateConversation(input: ParsedInboundTelegramTextMessa
     .select("*")
     .single();
   if (error) throw error;
-  return data as ConversationRow;
+  return { conversation: data as ConversationRow, wasCreated: true as const };
 }
 
 async function persistInboundMessage(
@@ -271,11 +272,28 @@ export async function processTelegramInboundUpdate(
 ): Promise<TelegramInboundProcessResult> {
   const parsed = parseTelegramInboundUpdate(integration, payload);
   if ("ignored" in parsed) {
+    await createEventLogSafely({
+      hotelId: integration.hotelId,
+      integrationId: integration.integrationId,
+      eventType: "telegram_webhook_ignored",
+      payload: { reason: parsed.reason },
+    });
     return { ok: true, status: "update_ignored", reason: parsed.reason };
   }
 
   const existingMessage = await findExistingInboundMessage(parsed);
   if (existingMessage) {
+    await createEventLogSafely({
+      hotelId: integration.hotelId,
+      integrationId: integration.integrationId,
+      eventType: "message_inbound_deduplicated",
+      entityType: "message",
+      entityId: existingMessage.id,
+      payload: {
+        external_message_id: parsed.externalMessageId,
+        update_id: parsed.updateId,
+      },
+    });
     return {
       ok: true,
       status: "duplicate_ignored",
@@ -285,11 +303,40 @@ export async function processTelegramInboundUpdate(
     };
   }
 
-  const guest = await resolveOrCreateGuest(parsed);
-  const conversation = await resolveOrCreateConversation(parsed, guest.id);
+  const { guest, wasCreated: guestCreated } = await resolveOrCreateGuest(parsed);
+  await createEventLogSafely({
+    hotelId: integration.hotelId,
+    integrationId: integration.integrationId,
+    eventType: guestCreated ? "guest_created" : "guest_resolved",
+    entityType: "guest",
+    entityId: guest.id,
+    payload: { external_user_id: parsed.senderExternalId },
+  });
+
+  const { conversation, wasCreated: conversationCreated } = await resolveOrCreateConversation(parsed, guest.id);
+  await createEventLogSafely({
+    hotelId: integration.hotelId,
+    integrationId: integration.integrationId,
+    eventType: conversationCreated ? "conversation_created" : "conversation_resolved",
+    entityType: "conversation",
+    entityId: conversation.id,
+    payload: { guest_id: guest.id },
+  });
+
   const persisted = await persistInboundMessage(parsed, conversation.id, guest.id, payload as Json);
 
   if (persisted.duplicate) {
+    await createEventLogSafely({
+      hotelId: integration.hotelId,
+      integrationId: integration.integrationId,
+      eventType: "message_inbound_deduplicated",
+      entityType: "message",
+      entityId: persisted.message.id,
+      payload: {
+        external_message_id: parsed.externalMessageId,
+        update_id: parsed.updateId,
+      },
+    });
     return {
       ok: true,
       status: "duplicate_ignored",
@@ -300,6 +347,19 @@ export async function processTelegramInboundUpdate(
   }
 
   await updateConversationAfterInbound(conversation, parsed);
+  await createEventLogSafely({
+    hotelId: integration.hotelId,
+    integrationId: integration.integrationId,
+    eventType: "message_inbound_saved",
+    entityType: "message",
+    entityId: persisted.message.id,
+    payload: {
+      conversation_id: conversation.id,
+      guest_id: guest.id,
+      external_message_id: parsed.externalMessageId,
+      update_id: parsed.updateId,
+    },
+  });
 
   return {
     ok: true,

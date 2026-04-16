@@ -655,7 +655,7 @@ This feature is complete only if:
 - [x] Telegram settings UI endpoint status updated to reflect live inbound ingestion
 - [x] minimal helper verification added via `npm run test:ph1-03`
 - [x] local end-to-end smoke verification added via `npm run verify:ph1-03`
-- [ ] richer observability and event logging for ingestion outcomes
+- [x] structured ingestion events persisted for webhook receive/reject/ignore and guest/conversation/message outcomes
 
 ## Verification Commands
 

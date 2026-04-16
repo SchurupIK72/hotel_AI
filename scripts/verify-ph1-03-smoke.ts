@@ -32,6 +32,7 @@ async function main() {
   const hotelId = env.DEMO_HOTEL_ID ?? "11111111-1111-1111-1111-111111111111";
   const externalUserId = "ph1-03-smoke-guest";
   const externalMessageId = "555000:777";
+  const updateId = 123456;
 
   process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl;
   process.env.SUPABASE_SERVICE_ROLE_KEY = serviceRoleKey;
@@ -62,9 +63,22 @@ async function main() {
     .eq("channel", "telegram")
     .eq("direction", "inbound")
     .eq("external_message_id", externalMessageId);
+  await supabase
+    .from("event_logs")
+    .delete()
+    .eq("hotel_id", hotelId)
+    .in("event_type", [
+      "telegram_webhook_received",
+      "guest_created",
+      "guest_resolved",
+      "conversation_created",
+      "conversation_resolved",
+      "message_inbound_saved",
+      "message_inbound_deduplicated",
+    ]);
 
   const payload = {
-    update_id: 123456,
+    update_id: updateId,
     message: {
       message_id: 777,
       date: 1_710_000_000,
@@ -127,6 +141,40 @@ async function main() {
     .eq("direction", "inbound");
   if (!messages || messages.length !== 1) {
     throw new Error(`Expected exactly 1 inbound message row, got ${messages?.length ?? 0}.`);
+  }
+
+  const { data: eventLogs } = await supabase
+    .from("event_logs")
+    .select("event_type, payload")
+    .eq("hotel_id", hotelId)
+    .in("event_type", [
+      "guest_created",
+      "conversation_created",
+      "message_inbound_saved",
+      "message_inbound_deduplicated",
+    ]);
+  if (!eventLogs || eventLogs.length < 4) {
+    throw new Error(`Expected PH1-03 event logs to be persisted, got ${eventLogs?.length ?? 0}.`);
+  }
+
+  const eventTypes = eventLogs.map((entry) => entry.event_type);
+  for (const expectedType of [
+    "guest_created",
+    "conversation_created",
+    "message_inbound_saved",
+    "message_inbound_deduplicated",
+  ]) {
+    if (!eventTypes.includes(expectedType)) {
+      throw new Error(`Expected event log ${expectedType} to be present.`);
+    }
+  }
+
+  const dedupeEvent = eventLogs.find((entry) => entry.event_type === "message_inbound_deduplicated");
+  if (!dedupeEvent || typeof dedupeEvent.payload !== "object" || dedupeEvent.payload === null) {
+    throw new Error("Expected deduplication event payload to be stored.");
+  }
+  if ((dedupeEvent.payload as { update_id?: string }).update_id !== String(updateId)) {
+    throw new Error("Expected deduplication event payload to keep the Telegram update_id.");
   }
 
   console.log("PH1-03 smoke verification passed.");
