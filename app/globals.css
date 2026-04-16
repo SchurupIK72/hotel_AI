@@ -188,3 +188,8 @@ textarea {
 .mono {
   font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 }
+
+.mono-wrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

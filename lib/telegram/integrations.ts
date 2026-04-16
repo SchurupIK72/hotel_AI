@@ -63,6 +63,7 @@ export type TelegramIntegrationSummary = {
 };
 
 export type TelegramWebhookEndpoint = {
+  endpointStatus: "reserved_endpoint_only";
   webhookUrl: string;
   webhookPathToken: string;
   webhookSecretRequired: boolean;
@@ -177,6 +178,7 @@ export async function getTelegramWebhookEndpoint(hotelId: string) {
   const config = await getTelegramIntegrationByWebhookPathToken(integration.webhookPathToken);
 
   return {
+    endpointStatus: "reserved_endpoint_only",
     webhookUrl: buildTelegramWebhookUrl(integration.webhookPathToken),
     webhookPathToken: integration.webhookPathToken,
     webhookSecretRequired: Boolean(config?.webhook_secret),

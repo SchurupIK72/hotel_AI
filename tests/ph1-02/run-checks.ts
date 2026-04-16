@@ -4,6 +4,7 @@ import { sanitizeTelegramErrorMessage } from "../../lib/telegram/api.ts";
 import {
   buildTelegramWebhookUrl,
   createWebhookPathToken,
+  getTelegramWebhookEndpoint,
 } from "../../lib/telegram/integrations.ts";
 
 const previousSecret = process.env.TELEGRAM_TOKEN_ENCRYPTION_SECRET;
@@ -31,6 +32,7 @@ try {
     buildTelegramWebhookUrl("abc123"),
     "https://hotel-ai.test/api/webhooks/telegram/abc123",
   );
+  assert.equal(typeof getTelegramWebhookEndpoint, "function");
 
   console.log("PH1-02 helper checks passed.");
 } catch (error) {

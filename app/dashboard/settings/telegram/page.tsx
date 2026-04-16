@@ -47,7 +47,7 @@ export default async function TelegramSettingsPage({ searchParams }: TelegramSet
           </article>
           <article className="meta-card">
             <h2>Webhook token</h2>
-            <p className="body-copy mono">{activeIntegration.webhookPathToken}</p>
+            <p className="body-copy mono mono-wrap">{activeIntegration.webhookPathToken}</p>
           </article>
           <article className="meta-card">
             <h2>Status</h2>
@@ -59,8 +59,14 @@ export default async function TelegramSettingsPage({ searchParams }: TelegramSet
           </article>
           {webhookEndpoint ? (
             <article className="meta-card">
+              <h2>Endpoint status</h2>
+              <p className="body-copy mono">{webhookEndpoint.endpointStatus}</p>
+            </article>
+          ) : null}
+          {webhookEndpoint ? (
+            <article className="meta-card">
               <h2>Webhook URL</h2>
-              <p className="body-copy mono">{webhookEndpoint.webhookUrl}</p>
+              <p className="body-copy mono mono-wrap">{webhookEndpoint.webhookUrl}</p>
             </article>
           ) : null}
         </div>
@@ -84,13 +90,13 @@ export default async function TelegramSettingsPage({ searchParams }: TelegramSet
           <h2>Manual Telegram webhook setup</h2>
           <div className="stack">
             <p className="body-copy">
-              Use this URL when you call Telegram `setWebhook` for the bot. The endpoint is already
-              reserved and validates the optional secret token, while full inbound ingestion lands in PH1-03.
+              This endpoint is currently marked as <span className="mono">reserved_endpoint_only</span>.
+              It can be pre-registered in Telegram, but it is not a live inbox ingestion endpoint until PH1-03.
             </p>
-            <p className="body-copy mono">{webhookEndpoint.webhookUrl}</p>
+            <p className="body-copy mono mono-wrap">{webhookEndpoint.webhookUrl}</p>
             <p className="body-copy">
-              If you saved a webhook secret, pass it as Telegram `secret_token`. After webhook setup,
-              keep the integration active until PH1-03 is implemented so the endpoint stays stable.
+              If you save a webhook secret, pass it as Telegram `secret_token`. The route currently
+              validates integration identity and optional secret token only; it does not persist guest messages yet.
             </p>
           </div>
         </article>

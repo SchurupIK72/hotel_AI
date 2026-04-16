@@ -460,6 +460,12 @@ npm run test:ph1-02
 npm run supabase:reset
 ```
 
+## Follow-up Completion Spec
+
+Remaining completion blockers are captured in:
+
+- [ph1-02-completion-hardening.md](/c:/REPO/hotelAI/.ai/specs/phase1/ph1-02-completion-hardening.md)
+
 ---
 
 ## Dependencies for Next Features

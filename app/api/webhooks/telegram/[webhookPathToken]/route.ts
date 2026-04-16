@@ -35,7 +35,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   return NextResponse.json({
     ok: true,
-    status: "accepted",
-    message: "Webhook endpoint is reserved and validated. Inbound processing will be implemented in PH1-03.",
+    status: "reserved_endpoint_only",
+    message: "Webhook endpoint is reserved and validated only. Inbound message ingestion will be implemented in PH1-03.",
   });
 }
