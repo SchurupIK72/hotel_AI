@@ -14,6 +14,8 @@ type KnowledgeManagementProps = {
   createPolicyItemAction: KnowledgeAction;
   updatePolicyItemAction: KnowledgeAction;
   deletePolicyItemAction: KnowledgeAction;
+  setFaqItemPublishedAction: KnowledgeAction;
+  setPolicyItemPublishedAction: KnowledgeAction;
 };
 
 function formatDateTime(value: string | null) {
@@ -75,14 +77,25 @@ function renderKnowledgeCard(
   hotelUserNames: Record<string, string>,
   actions: Pick<
     KnowledgeManagementProps,
-    "updateFaqItemAction" | "deleteFaqItemAction" | "updatePolicyItemAction" | "deletePolicyItemAction"
+    | "updateFaqItemAction"
+    | "deleteFaqItemAction"
+    | "updatePolicyItemAction"
+    | "deletePolicyItemAction"
+    | "setFaqItemPublishedAction"
+    | "setPolicyItemPublishedAction"
   >,
 ) {
   const isFaq = item.type === "faq";
   const updateAction = isFaq ? actions.updateFaqItemAction : actions.updatePolicyItemAction;
   const deleteAction = isFaq ? actions.deleteFaqItemAction : actions.deletePolicyItemAction;
+  const publishAction = isFaq ? actions.setFaqItemPublishedAction : actions.setPolicyItemPublishedAction;
   const creatorName = resolveHotelUserName(hotelUserNames, item.createdByHotelUserId);
   const editorName = resolveHotelUserName(hotelUserNames, item.updatedByHotelUserId);
+  const publishButtonLabel = item.publishState === "published" ? "Move to draft" : "Publish item";
+  const governanceCopy =
+    item.publishState === "published"
+      ? "Approved for later Copilot retrieval."
+      : "Draft items stay unavailable to downstream AI retrieval.";
 
   return (
     <article className="meta-card knowledge-card" key={item.id}>
@@ -111,18 +124,28 @@ function renderKnowledgeCard(
           <p className="body-copy mono">Updated: {formatDateTime(item.updatedAt)}</p>
           <p className="body-copy mono">Published: {formatDateTime(item.publishedAt)}</p>
         </div>
+        <p className="body-copy">{governanceCopy}</p>
         <div className="knowledge-action-row">
           <button className="button" type="submit">
             Save changes
           </button>
         </div>
       </form>
-      <form action={deleteAction}>
-        <input name={isFaq ? "faqItemId" : "policyItemId"} type="hidden" value={item.id} />
-        <button className="button secondary-button" type="submit">
-          Delete item
-        </button>
-      </form>
+      <div className="knowledge-action-row">
+        <form action={publishAction}>
+          <input name={isFaq ? "faqItemId" : "policyItemId"} type="hidden" value={item.id} />
+          <input name="isPublished" type="hidden" value={item.publishState === "published" ? "false" : "true"} />
+          <button className="button secondary-button" type="submit">
+            {publishButtonLabel}
+          </button>
+        </form>
+        <form action={deleteAction}>
+          <input name={isFaq ? "faqItemId" : "policyItemId"} type="hidden" value={item.id} />
+          <button className="button secondary-button" type="submit">
+            Delete item
+          </button>
+        </form>
+      </div>
     </article>
   );
 }
@@ -139,6 +162,8 @@ function renderKnowledgeSection(
     | "createPolicyItemAction"
     | "updatePolicyItemAction"
     | "deletePolicyItemAction"
+    | "setFaqItemPublishedAction"
+    | "setPolicyItemPublishedAction"
   >,
 ) {
   const isFaq = type === "faq";
@@ -183,6 +208,8 @@ export function KnowledgeManagement({
   createPolicyItemAction,
   updatePolicyItemAction,
   deletePolicyItemAction,
+  setFaqItemPublishedAction,
+  setPolicyItemPublishedAction,
 }: KnowledgeManagementProps) {
   const actions = {
     createFaqItemAction,
@@ -191,6 +218,8 @@ export function KnowledgeManagement({
     createPolicyItemAction,
     updatePolicyItemAction,
     deletePolicyItemAction,
+    setFaqItemPublishedAction,
+    setPolicyItemPublishedAction,
   };
 
   return (

@@ -23,6 +23,7 @@ try {
   assert.equal(faq.type, "faq");
   assert.equal(faq.title, "Do you offer breakfast?");
   assert.equal(faq.publishState, "draft");
+  assert.equal(faq.publishedAt, null);
 
   const policy = createPolicyKnowledgeListItem({
     id: "policy-1",
@@ -39,6 +40,7 @@ try {
   assert.equal(policy.type, "policy");
   assert.equal(policy.title, "Late checkout");
   assert.equal(policy.publishState, "published");
+  assert.equal(policy.publishedAt, "2026-04-17T12:00:00.000Z");
 
   console.log("PH1-06 helper checks passed.");
 } catch (error) {

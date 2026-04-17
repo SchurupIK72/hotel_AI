@@ -4,6 +4,8 @@ import {
   createPolicyItemAction,
   deleteFaqItemAction,
   deletePolicyItemAction,
+  setFaqItemPublishedAction,
+  setPolicyItemPublishedAction,
   updateFaqItemAction,
   updatePolicyItemAction,
 } from "@/app/dashboard/knowledge/actions";
@@ -43,6 +45,8 @@ export default async function KnowledgePage({ searchParams }: KnowledgePageProps
       flashStatus={params.status === "error" ? "error" : params.status === "saved" ? "saved" : null}
       hotelUserNames={hotelUserNames}
       policyItems={policyItems}
+      setFaqItemPublishedAction={setFaqItemPublishedAction}
+      setPolicyItemPublishedAction={setPolicyItemPublishedAction}
       updateFaqItemAction={updateFaqItemAction}
       updatePolicyItemAction={updatePolicyItemAction}
     />

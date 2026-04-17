@@ -8,6 +8,8 @@ import {
   createPolicyItem,
   deleteFaqItem,
   deletePolicyItem,
+  setFaqItemPublished,
+  setPolicyItemPublished,
   updateFaqItem,
   updatePolicyItem,
 } from "@/lib/knowledge/store";
@@ -24,6 +26,33 @@ function requireNonEmpty(value: string, message: string) {
   if (!value) {
     redirect(withMessage("error", message));
   }
+}
+
+async function togglePublishedKnowledgeItem(input: {
+  itemId: string;
+  itemType: "faq" | "policy";
+  isPublished: boolean;
+}) {
+  const access = await requireHotelAdmin();
+  const result =
+    input.itemType === "faq"
+      ? await setFaqItemPublished({
+          hotelId: access.hotelId,
+          faqItemId: input.itemId,
+          actorHotelUserId: access.hotelUserId,
+          isPublished: input.isPublished,
+        })
+      : await setPolicyItemPublished({
+          hotelId: access.hotelId,
+          policyItemId: input.itemId,
+          actorHotelUserId: access.hotelUserId,
+          isPublished: input.isPublished,
+        });
+  revalidatePath("/dashboard/knowledge");
+  const itemLabel = input.itemType === "faq" ? "FAQ item" : "Policy item";
+  const successMessage = input.isPublished ? `${itemLabel} published.` : `${itemLabel} moved to draft.`;
+  const errorMessage = input.isPublished ? `${itemLabel} could not be published.` : `${itemLabel} could not be unpublished.`;
+  redirect(withMessage(result.ok ? "saved" : "error", result.ok ? successMessage : errorMessage));
 }
 
 export async function createFaqItemAction(formData: FormData) {
@@ -74,6 +103,12 @@ export async function deleteFaqItemAction(formData: FormData) {
   redirect(withMessage(result.ok ? "saved" : "error", result.ok ? "FAQ item deleted." : "FAQ item could not be deleted."));
 }
 
+export async function setFaqItemPublishedAction(formData: FormData) {
+  const faqItemId = toValue(formData.get("faqItemId"));
+  const isPublished = toValue(formData.get("isPublished")) === "true";
+  return togglePublishedKnowledgeItem({ itemId: faqItemId, itemType: "faq", isPublished });
+}
+
 export async function createPolicyItemAction(formData: FormData) {
   const access = await requireHotelAdmin();
   const title = toValue(formData.get("title"));
@@ -120,4 +155,10 @@ export async function deletePolicyItemAction(formData: FormData) {
   });
   revalidatePath("/dashboard/knowledge");
   redirect(withMessage(result.ok ? "saved" : "error", result.ok ? "Policy item deleted." : "Policy item could not be deleted."));
+}
+
+export async function setPolicyItemPublishedAction(formData: FormData) {
+  const policyItemId = toValue(formData.get("policyItemId"));
+  const isPublished = toValue(formData.get("isPublished")) === "true";
+  return togglePublishedKnowledgeItem({ itemId: policyItemId, itemType: "policy", isPublished });
 }

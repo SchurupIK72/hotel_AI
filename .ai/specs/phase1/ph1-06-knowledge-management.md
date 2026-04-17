@@ -501,8 +501,8 @@ Prepare knowledge management for downstream retrieval work.
 ## Implementation Progress
 
 Current status:
-- Stage 2 hotel admin knowledge management UI completed on `feature/ph1-06-knowledge-management`
-- Next target: Stage 3 publish governance and auditability
+- Stage 3 publish governance and auditability completed on `feature/ph1-06-knowledge-management`
+- Next target: Stage 4 verification and Phase 1 handoff readiness
 
 Completed:
 - [x] Added hotel-scoped FAQ and policy schema with publish metadata and RLS
@@ -512,9 +512,10 @@ Completed:
 - [x] Added `/dashboard/knowledge` admin route with FAQ and policy management UI
 - [x] Added empty, loading, and error states plus dashboard navigation entry points
 - [x] Exposed publish-state badges and attribution metadata in the management workspace
+- [x] Added hotel-admin publish/unpublish controls in the dashboard
+- [x] Made publish governance explicit in the workspace with approved-vs-draft guidance
 
 Pending:
-- [ ] Add hotel-admin publish/unpublish controls in the dashboard
 - [ ] Add live smoke verification and manual PH1-06 knowledge flow notes
 
 ---
