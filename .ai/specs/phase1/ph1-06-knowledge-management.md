@@ -3,7 +3,7 @@
 > **Created:** 2026-04-17
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** In Progress
+> **Status:** Completed
 > **Depends on:** PH1-01 - Tenant Foundation
 
 ---
@@ -501,8 +501,8 @@ Prepare knowledge management for downstream retrieval work.
 ## Implementation Progress
 
 Current status:
-- Stage 3 publish governance and auditability completed on `feature/ph1-06-knowledge-management`
-- Next target: Stage 4 verification and Phase 1 handoff readiness
+- Stage 4 verification and Phase 1 handoff readiness completed on `feature/ph1-06-knowledge-management`
+- Ready for PH1-07 knowledge retrieval handoff
 
 Completed:
 - [x] Added hotel-scoped FAQ and policy schema with publish metadata and RLS
@@ -514,9 +514,8 @@ Completed:
 - [x] Exposed publish-state badges and attribution metadata in the management workspace
 - [x] Added hotel-admin publish/unpublish controls in the dashboard
 - [x] Made publish governance explicit in the workspace with approved-vs-draft guidance
-
-Pending:
-- [ ] Add live smoke verification and manual PH1-06 knowledge flow notes
+- [x] Added `verify:ph1-06` live smoke verification for CRUD, publish governance, and audit events
+- [x] Added PH1-06 manual smoke notes for local dashboard verification
 
 ---
 
@@ -590,6 +589,7 @@ Execution note:
 
 - PH1-06 should be validated with real hotel-scoped records, not only isolated helper tests;
 - verification should explicitly distinguish draft knowledge from published knowledge.
+- local smoke verification now passes after `supabase:reset` and `demo:bootstrap`.
 
 ---
 

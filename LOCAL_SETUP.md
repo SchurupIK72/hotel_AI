@@ -245,6 +245,12 @@ Run the PH1-03 live smoke verification against local Supabase:
 npm.cmd run verify:ph1-03
 ```
 
+Run the PH1-06 live smoke verification against local Supabase:
+
+```powershell
+npm.cmd run verify:ph1-06
+```
+
 ## PH1-04 Manual Workspace Smoke Check
 
 Once PH1-03 ingestion has created at least one conversation, you can verify the conversation workspace manually:
@@ -274,6 +280,25 @@ Once the inbox contains at least one unread conversation, you can verify the PH1
 5. Change the status to `pending` and confirm the banner reports a saved operation
 6. Assign the conversation to yourself and confirm it appears under `http://localhost:3000/dashboard/inbox?filter=assigned_to_me`
 7. Unassign the conversation and confirm it disappears from `assigned_to_me`
+
+## PH1-06 Manual Knowledge Smoke Check
+
+Once you are signed in as the demo hotel admin, you can verify the PH1-06 knowledge flow manually:
+
+1. Start the app with `npm.cmd run dev`
+2. Sign in at `http://localhost:3000/sign-in`
+3. Open `http://localhost:3000/dashboard/knowledge`
+4. Create a new FAQ item and confirm it first appears with a `draft` badge
+5. Edit the FAQ answer and save it, then confirm the success banner and updated metadata
+6. Publish the FAQ item and confirm:
+   - the badge changes to `published`
+   - the `Published` timestamp is populated
+   - the governance copy says the item is approved for later Copilot retrieval
+7. Create a policy item, publish it, then move it back to draft and confirm:
+   - the draft badge returns
+   - the `Published` timestamp clears back to `Not published`
+   - the item remains stored and editable
+8. Delete the temporary FAQ and policy items when you finish the smoke check
 
 ## Important Notes
 
