@@ -3,7 +3,7 @@
 > **Created:** 2026-04-17
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** In Progress
+> **Status:** Completed
 > **Depends on:** PH1-03 - Inbound Messaging Ingestion, PH1-06 - Knowledge Base Management
 
 ---
@@ -456,8 +456,8 @@ Prove that published knowledge is retrievable and unpublished knowledge is ignor
 ## Implementation Progress
 
 Current status:
-- Stage 3 observability and PH1-08 handoff contract completed on `feature/ph1-07-knowledge-retrieval`
-- Next target: Stage 4 verification and retrieval smoke flow
+- Stage 4 verification and retrieval smoke flow completed on `feature/ph1-07-knowledge-retrieval`
+- Ready for PH1-08 AI draft generation handoff
 
 Completed:
 - [x] Defined PH1-07 product scope, retrieval rules, and handoff boundaries with PH1-08
@@ -470,9 +470,8 @@ Completed:
 - [x] Added `kb_retrieval_requested` / `kb_retrieval_completed` event emission
 - [x] Added compact evidence summaries for retrieval observability payloads
 - [x] Added PH1-08-facing retrieval handoff contract helpers
-
-Pending:
-- [ ] Add live smoke verification and manual PH1-07 retrieval notes
+- [x] Added `verify:ph1-07` live smoke verification for published-only retrieval and fallback behavior
+- [x] Added PH1-07 manual retrieval notes for local verification
 
 ---
 
@@ -546,6 +545,7 @@ Execution note:
 
 - PH1-07 should be validated against real PH1-06 published knowledge records, not only synthetic ranking helpers;
 - verification should explicitly show that draft or unpublished knowledge is ignored even when it textually matches the guest query.
+- local smoke verification now passes against published FAQ/policy evidence and draft-only fallback cases.
 
 ---
 

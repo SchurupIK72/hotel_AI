@@ -251,6 +251,12 @@ Run the PH1-06 live smoke verification against local Supabase:
 npm.cmd run verify:ph1-06
 ```
 
+Run the PH1-07 live smoke verification against local Supabase:
+
+```powershell
+npm.cmd run verify:ph1-07
+```
+
 ## PH1-04 Manual Workspace Smoke Check
 
 Once PH1-03 ingestion has created at least one conversation, you can verify the conversation workspace manually:
@@ -299,6 +305,24 @@ Once you are signed in as the demo hotel admin, you can verify the PH1-06 knowle
    - the `Published` timestamp clears back to `Not published`
    - the item remains stored and editable
 8. Delete the temporary FAQ and policy items when you finish the smoke check
+
+## PH1-07 Manual Retrieval Smoke Check
+
+Once PH1-06 knowledge items exist for the demo hotel, you can verify PH1-07 retrieval behavior manually:
+
+1. Start the app with `npm.cmd run dev`
+2. Sign in at `http://localhost:3000/sign-in`
+3. Open `http://localhost:3000/dashboard/knowledge`
+4. Create and publish one FAQ item for an informational topic such as breakfast hours
+5. Create and publish one policy item for an operational rule such as late checkout
+6. Create one additional draft-only knowledge item for a topic not covered anywhere else, such as airport shuttle
+7. Run `npm.cmd run verify:ph1-07`
+8. Confirm the smoke script passes and therefore proves:
+   - published FAQ and policy knowledge is retrievable
+   - policy evidence can outrank FAQ evidence when both are relevant
+   - draft-only knowledge is ignored by retrieval
+   - no-evidence queries return clarification or escalation mode instead of confident evidence
+   - retrieval emits `kb_retrieval_requested` and `kb_retrieval_completed` with compact evidence summaries
 
 ## Important Notes
 

@@ -24,6 +24,7 @@
     "verify:ph1-04": "node --experimental-strip-types ./scripts/verify-ph1-04-smoke.ts",
     "verify:ph1-05": "node --experimental-strip-types ./scripts/verify-ph1-05-smoke.ts",
     "verify:ph1-06": "node --experimental-strip-types ./scripts/verify-ph1-06-smoke.ts",
+    "verify:ph1-07": "node --experimental-strip-types ./scripts/verify-ph1-07-smoke.ts",
     "dev:setup": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1",
     "dev:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-stop.ps1"
   },
