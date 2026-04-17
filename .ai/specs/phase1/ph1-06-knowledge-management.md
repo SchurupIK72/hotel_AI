@@ -3,7 +3,7 @@
 > **Created:** 2026-04-17
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** Draft
+> **Status:** In Progress
 > **Depends on:** PH1-01 - Tenant Foundation
 
 ---
@@ -497,6 +497,23 @@ Prepare knowledge management for downstream retrieval work.
 
 - local verification demonstrates tenant-safe CRUD and publish governance;
 - PH1-07 can consume published knowledge without schema ambiguity.
+
+## Implementation Progress
+
+Current status:
+- Stage 1 knowledge schema and typed domain helpers completed on `feature/ph1-06-knowledge-management`
+- Next target: Stage 2 hotel admin knowledge management UI
+
+Completed:
+- [x] Added hotel-scoped FAQ and policy schema with publish metadata and RLS
+- [x] Updated database types for PH1-06 knowledge tables
+- [x] Added typed knowledge list models and server-side CRUD/publish helpers
+- [x] Added `test:ph1-06` helper checks for the new knowledge contracts
+
+Pending:
+- [ ] Add `/dashboard/knowledge` management UI
+- [ ] Add hotel-admin publish/unpublish controls in the dashboard
+- [ ] Add live smoke verification and manual PH1-06 knowledge flow notes
 
 ---
 
