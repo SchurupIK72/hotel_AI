@@ -3,7 +3,7 @@
 > **Created:** 2026-04-17
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** In Progress
+> **Status:** Completed
 > **Depends on:** PH1-03 - Inbound Messaging Ingestion, PH1-04 - Conversation Workspace, PH1-07 - Knowledge Retrieval
 
 ---
@@ -566,8 +566,8 @@ Prove that draft generation is safe, stored, and visible to staff before outboun
 ## Implementation Progress
 
 Current status:
-- Stage 3 inbox workspace integration and regenerate flow completed on `feature/ph1-08-ai-draft-generation`
-- Ready for Stage 4 verification and PH1-09 handoff checks
+- Stage 4 verification and PH1-09 handoff checks completed on `feature/ph1-08-ai-draft-generation`
+- Ready for PH1-09 human-approved outbound reply flow
 
 Completed:
 - [x] Defined PH1-08 product scope, safety rules, and boundaries with PH1-09
@@ -585,9 +585,11 @@ Completed:
 - [x] Added draft metadata rendering inside the PH1-04 workspace panel
 - [x] Added manual regenerate action in the inbox workspace
 - [x] Added safe draft-panel error fallback without breaking the rest of the conversation workspace
+- [x] Added `verify:ph1-08` live smoke verification for supported, fallback, and suppressed draft outcomes
+- [x] Added PH1-08 manual verification notes for inbox workspace draft review and regenerate flow
 
 Pending implementation:
-- [ ] Stage 4 - Verification and handoff to PH1-09
+- none
 
 ---
 
@@ -649,7 +651,7 @@ Smoke checks:
 Execution note:
 
 - PH1-08 should be validated against real PH1-03 conversation/message data and PH1-07 retrieval results, not only isolated generation helpers;
-- verification should explicitly show both successful informational draft generation and safe suppression behavior for unsupported or weak-evidence cases.
+- local smoke verification now covers knowledge-backed drafts, cautious fallback drafts, manual regenerate behavior, and safe suppression for unsupported requests.
 
 ---
 
