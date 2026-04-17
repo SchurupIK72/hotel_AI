@@ -10,6 +10,7 @@
     "test:ph1-01": "node --experimental-strip-types ./tests/ph1-01/run-checks.ts",
     "test:ph1-02": "node --experimental-strip-types ./tests/ph1-02/run-checks.ts",
     "test:ph1-03": "node --experimental-strip-types ./tests/ph1-03/run-checks.ts",
+    "test:ph1-04": "node --experimental-strip-types ./tests/ph1-04/run-checks.ts",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
@@ -17,6 +18,7 @@
     "demo:bootstrap": "node ./scripts/bootstrap-local-demo.mjs",
     "verify:ph1-01": "node ./scripts/verify-ph1-01-smoke.mjs",
     "verify:ph1-03": "node --experimental-strip-types ./scripts/verify-ph1-03-smoke.ts",
+    "verify:ph1-04": "node --experimental-strip-types ./scripts/verify-ph1-04-smoke.ts",
     "dev:setup": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1",
     "dev:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/dev-stop.ps1"
   },

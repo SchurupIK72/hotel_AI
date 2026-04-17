@@ -475,7 +475,7 @@ This feature does not require the full inbox UI yet, but it must produce the dat
 
 ### Operational visibility minimum
 
-Before PH1-04 exists, local verification should still allow the team to confirm that:
+Before or alongside PH1-04, local verification should still allow the team to confirm that:
 
 - inbound webhook traffic created a guest;
 - a conversation exists for that guest;
@@ -648,6 +648,12 @@ This feature is complete only if:
 
 ## Implementation Progress
 
+Current status:
+
+- PH1-03 implementation is functionally complete for the planned inbound ingestion scope;
+- PH1-04 already consumes the normalized read-model fields produced by this feature;
+- remaining verification work is operational rather than architectural.
+
 - [x] messaging schema for `guests`, `conversations`, and `messages` added with indexes and RLS
 - [x] Telegram inbound parser added for supported text-message updates
 - [x] webhook route activated from reserved mode into live inbound ingestion
@@ -658,17 +664,31 @@ This feature is complete only if:
 - [x] structured ingestion events persisted for webhook receive/reject/ignore and guest/conversation/message outcomes
 - [x] route-level validation helpers and checks added for invalid secret, inactive integration, and malformed payload handling
 - [x] dependency-injected webhook handler and route integration checks added for success and rejection scenarios
+- [x] downstream inbox read-model fields are now consumed by the initial PH1-04 conversation workspace implementation
+- [x] PH1-04 verification path added on top of PH1-03 records via `npm run verify:ph1-04` (requires a running local Supabase stack)
 
 ## Verification Commands
 
-Run these checks locally after migrations are applied:
+Core checks:
 
 ```bash
 npm run typecheck
 npm run test:ph1-03
-npm run verify:ph1-03
 npm run supabase:reset
 ```
+
+Smoke checks:
+
+```bash
+npm run verify:ph1-03
+npm run verify:ph1-04
+```
+
+Execution note:
+
+- `npm run verify:ph1-03` is the direct PH1-03 smoke path for ingestion persistence and deduplication;
+- `npm run verify:ph1-04` is a downstream validation path that confirms the PH1-03 records are usable by the first conversation workspace iteration;
+- smoke verification commands require a running local Supabase stack.
 
 ---
 
@@ -683,6 +703,11 @@ This feature must be finished before:
 - PH1-10 Observability, audit, and release acceptance
 
 Those features may assume that inbound Telegram traffic already produces stable tenant-scoped guest, conversation, and message records.
+
+Current sync note:
+
+- PH1-04 has already started consuming `guests`, `conversations`, and `messages` from this spec for the first inbox workspace iteration;
+- PH1-03 remains the source-of-truth spec for how those records are created, deduplicated, and kept tenant-safe.
 
 ---
 

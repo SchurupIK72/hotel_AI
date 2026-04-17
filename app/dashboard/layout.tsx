@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { signOutAction } from "@/app/(auth)/actions";
 import { requireHotelUser } from "@/lib/auth/guards";
 
@@ -9,9 +10,16 @@ export default async function DashboardLayout({
   return (
     <div className="dashboard-shell">
       <header className="dashboard-header">
-        <div>
-          <p className="eyebrow">Tenant-safe dashboard</p>
-          <strong>{access.hotelName ?? access.hotelId}</strong>
+        <div className="dashboard-brand">
+          <div>
+            <p className="eyebrow">Tenant-safe dashboard</p>
+            <strong>{access.hotelName ?? access.hotelId}</strong>
+          </div>
+          <nav className="dashboard-nav">
+            <Link href="/dashboard">Overview</Link>
+            <Link href="/dashboard/inbox">Inbox</Link>
+            <Link href="/dashboard/settings/telegram">Telegram</Link>
+          </nav>
         </div>
         <form action={signOutAction}>
           <button className="button secondary-button" type="submit">
@@ -23,4 +31,3 @@ export default async function DashboardLayout({
     </div>
   );
 }
-

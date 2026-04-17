@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireHotelUser } from "@/lib/auth/guards";
 
 export default async function DashboardPage() {
@@ -13,6 +14,20 @@ export default async function DashboardPage() {
           resolution, and tenant-safe access context are working together.
         </p>
       </div>
+      <article className="meta-card stack">
+        <div>
+          <p className="eyebrow">PH1-04</p>
+          <h2 className="section-title">Conversation workspace is available</h2>
+        </div>
+        <p className="body-copy">
+          Open the inbox to review tenant-scoped guest conversations, message history, and the draft placeholder panel.
+        </p>
+        <div>
+          <Link className="button dashboard-link-button" href="/dashboard/inbox">
+            Open inbox
+          </Link>
+        </div>
+      </article>
       <div className="meta-grid">
         <article className="meta-card">
           <h2>User</h2>
@@ -34,4 +49,3 @@ export default async function DashboardPage() {
     </section>
   );
 }
-

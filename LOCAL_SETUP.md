@@ -245,6 +245,22 @@ Run the PH1-03 live smoke verification against local Supabase:
 npm.cmd run verify:ph1-03
 ```
 
+## PH1-04 Manual Workspace Smoke Check
+
+Once PH1-03 ingestion has created at least one conversation, you can verify the conversation workspace manually:
+
+1. Start the app with `npm.cmd run dev`
+2. Sign in at `http://localhost:3000/sign-in`
+3. Open `http://localhost:3000/dashboard/inbox`
+4. Confirm the inbox list shows only hotel-scoped conversations ordered by latest activity
+5. Confirm the default workspace opens the newest conversation automatically
+6. Open another conversation from the list and verify:
+   - guest summary fields render without exposing raw payloads
+   - timeline messages are chronological
+   - unread badge and last preview match the stored conversation state
+   - the draft panel shows the PH1-04 placeholder state
+7. Open a fake conversation URL such as `http://localhost:3000/dashboard/inbox/not-a-real-id` and confirm the app shows a safe not-found experience
+
 ## Important Notes
 
 - `supabase/seed.sql` is used for reproducible database seed data.
