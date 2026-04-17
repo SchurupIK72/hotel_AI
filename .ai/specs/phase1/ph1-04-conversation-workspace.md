@@ -3,7 +3,7 @@
 > **Created:** 2026-04-17
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** In Progress
+> **Status:** Completed
 > **Depends on:** PH1-01 - Tenant Foundation and Staff Access, PH1-03 - Inbound Messaging Ingestion
 
 ---
@@ -518,7 +518,7 @@ This feature is complete only if:
 
 Current status:
 
-- PH1-04 already has a working first-pass inbox workspace wired into the protected dashboard;
+- PH1-04 now has a working inbox workspace merged into `main`;
 - all automated checks and local smoke verification now pass against the local Supabase stack;
 - the main remaining work is broader browser-level validation;
 - this feature now actively consumes the normalized messaging records produced by PH1-03.

@@ -3,7 +3,7 @@
 > **Created:** 2026-04-16
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** In Progress
+> **Status:** Completed
 > **Depends on:** PH1-01 - Tenant Foundation and Staff Access, PH1-02 - Hotel Setup and Telegram Integration
 
 ---
@@ -650,7 +650,7 @@ This feature is complete only if:
 
 Current status:
 
-- PH1-03 implementation is functionally complete for the planned inbound ingestion scope;
+- PH1-03 implementation is complete for the planned inbound ingestion scope and is now merged into `main`;
 - PH1-04 already consumes the normalized read-model fields produced by this feature;
 - remaining verification work is operational rather than architectural.
 
