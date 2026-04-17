@@ -83,6 +83,8 @@ try {
           label: "Draft 1",
           body: "Breakfast is served from 07:00 to 10:30.",
           confidenceLabel: "knowledge-backed",
+          createdAt: "2026-04-18T09:00:00.000Z",
+          modelName: "gpt-phase1",
           sourceType: "kb",
         },
       ],

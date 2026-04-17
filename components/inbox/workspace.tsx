@@ -1,6 +1,10 @@
 import Link from "next/link";
 import type { AssignableHotelUser } from "@/lib/db/hotel-users";
-import { assignConversationAction, updateConversationStatusAction } from "@/app/dashboard/inbox/actions";
+import {
+  assignConversationAction,
+  regenerateConversationDraftsAction,
+  updateConversationStatusAction,
+} from "@/app/dashboard/inbox/actions";
 import type {
   ConversationDraftPanelState,
   ConversationStatus,
@@ -78,7 +82,18 @@ function getAssignableHotelUserLabel(user: AssignableHotelUser) {
   return user.full_name?.trim() || `${user.role.replaceAll("_", " ")} (${user.id.slice(0, 8)})`;
 }
 
-function renderDraftPanel(panel: ConversationDraftPanelState) {
+function renderDraftPanel(panel: ConversationDraftPanelState, conversationId: string | null, currentFilter: InboxFilter) {
+  const actionLabel = panel.state === "ready" ? "Refresh drafts" : "Generate drafts";
+  const actionForm = conversationId ? (
+    <form action={regenerateConversationDraftsAction}>
+      <input name="conversationId" type="hidden" value={conversationId} />
+      <input name="filter" type="hidden" value={currentFilter} />
+      <button className="button secondary-button" type="submit">
+        {actionLabel}
+      </button>
+    </form>
+  ) : null;
+
   if (panel.state === "ready") {
     return (
       <article className="meta-card stack">
@@ -90,12 +105,17 @@ function renderDraftPanel(panel: ConversationDraftPanelState) {
           <section className="draft-card stack" key={draft.id}>
             <strong>
               {draft.label}
-              {draft.confidenceLabel ? ` · ${draft.confidenceLabel}` : ""}
+              {draft.confidenceLabel ? ` - ${draft.confidenceLabel}` : ""}
             </strong>
             <p className="body-copy">{draft.body}</p>
-            <p className="conversation-meta mono">Source: {draft.sourceType}</p>
+            <div className="draft-meta-stack">
+              <p className="conversation-meta mono">Source: {draft.sourceType}</p>
+              <p className="conversation-meta mono">Created: {formatDateTime(draft.createdAt)}</p>
+              {draft.modelName ? <p className="conversation-meta mono">Model: {draft.modelName}</p> : null}
+            </div>
           </section>
         ))}
+        {actionForm}
       </article>
     );
   }
@@ -107,6 +127,7 @@ function renderDraftPanel(panel: ConversationDraftPanelState) {
         <h2 className="section-title">{panel.title}</h2>
       </div>
       <p className="body-copy">{panel.message}</p>
+      {actionForm}
     </article>
   );
 }
@@ -247,128 +268,132 @@ export function InboxWorkspace({
           ) : null}
           {selectedConversation ? (
             <div className="stack">
-            <header className="inbox-pane-header">
-              <div>
-                <p className="eyebrow">Conversation</p>
-                <h2 className="section-title">{selectedConversation.guest.displayName}</h2>
-              </div>
-              <div className="conversation-meta-stack">
-                <span className="conversation-pill">{formatStatusLabel(selectedConversation.conversation.status)}</span>
-                <span className="conversation-pill">{formatStatusLabel(selectedConversation.conversation.mode)}</span>
-              </div>
-            </header>
+              <header className="inbox-pane-header">
+                <div>
+                  <p className="eyebrow">Conversation</p>
+                  <h2 className="section-title">{selectedConversation.guest.displayName}</h2>
+                </div>
+                <div className="conversation-meta-stack">
+                  <span className="conversation-pill">{formatStatusLabel(selectedConversation.conversation.status)}</span>
+                  <span className="conversation-pill">{formatStatusLabel(selectedConversation.conversation.mode)}</span>
+                </div>
+              </header>
 
-            <article className="meta-card conversation-detail-card">
-              <div className="conversation-detail-grid">
-                <div>
-                  <span className="eyebrow">Channel</span>
-                  <p className="body-copy mono">{selectedConversation.conversation.channel}</p>
+              <article className="meta-card conversation-detail-card">
+                <div className="conversation-detail-grid">
+                  <div>
+                    <span className="eyebrow">Channel</span>
+                    <p className="body-copy mono">{selectedConversation.conversation.channel}</p>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Unread</span>
+                    <p className="body-copy mono">{selectedConversation.conversation.unreadCount}</p>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Last activity</span>
+                    <p className="body-copy mono">{formatDateTime(selectedConversation.conversation.lastMessageAt)}</p>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Last AI draft</span>
+                    <p className="body-copy mono">{formatDateTime(selectedConversation.conversation.lastAiDraftAt)}</p>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Assigned hotel user</span>
+                    <p className="body-copy mono">
+                      {assignedHotelUser
+                        ? getAssignableHotelUserLabel(assignedHotelUser)
+                        : selectedConversation.conversation.assignedHotelUserId ?? "Unassigned"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <span className="eyebrow">Unread</span>
-                  <p className="body-copy mono">{selectedConversation.conversation.unreadCount}</p>
-                </div>
-                <div>
-                  <span className="eyebrow">Last activity</span>
-                  <p className="body-copy mono">{formatDateTime(selectedConversation.conversation.lastMessageAt)}</p>
-                </div>
-                <div>
-                  <span className="eyebrow">Assigned hotel user</span>
-                  <p className="body-copy mono">
-                    {assignedHotelUser
-                      ? getAssignableHotelUserLabel(assignedHotelUser)
-                      : selectedConversation.conversation.assignedHotelUserId ?? "Unassigned"}
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            <div className="conversation-controls-grid">
-              <article className="meta-card stack">
-                <div>
-                  <p className="eyebrow">Status</p>
-                  <h3 className="section-title">Workflow state</h3>
-                </div>
-                <form action={updateConversationStatusAction} className="control-form">
-                  <input name="conversationId" type="hidden" value={selectedConversation.conversation.id} />
-                  <input name="filter" type="hidden" value={currentFilter} />
-                  <label className="label-stack">
-                    <span>Current status</span>
-                    <select
-                      className="input"
-                      defaultValue={selectedConversation.conversation.status}
-                      name="nextStatus"
-                    >
-                      {STATUS_OPTIONS.map((status) => (
-                        <option key={status} value={status}>
-                          {formatStatusLabel(status)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button className="button" type="submit">
-                    Save status
-                  </button>
-                </form>
               </article>
 
-              <article className="meta-card stack">
-                <div>
-                  <p className="eyebrow">Assignment</p>
-                  <h3 className="section-title">Responsible staff user</h3>
-                </div>
-                <form action={assignConversationAction} className="control-form">
-                  <input name="conversationId" type="hidden" value={selectedConversation.conversation.id} />
-                  <input name="filter" type="hidden" value={currentFilter} />
-                  <label className="label-stack">
-                    <span>Current assignee</span>
-                    <select
-                      className="input"
-                      defaultValue={selectedConversation.conversation.assignedHotelUserId ?? ""}
-                      name="assignedHotelUserId"
-                    >
-                      <option value="">Unassigned</option>
-                      {assignableHotelUsers.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {getAssignableHotelUserLabel(user)}
-                          {user.id === currentHotelUserId ? " (You)" : ""}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button className="button secondary-button" type="submit">
-                    Save assignment
-                  </button>
-                </form>
-              </article>
-            </div>
+              <div className="conversation-controls-grid">
+                <article className="meta-card stack">
+                  <div>
+                    <p className="eyebrow">Status</p>
+                    <h3 className="section-title">Workflow state</h3>
+                  </div>
+                  <form action={updateConversationStatusAction} className="control-form">
+                    <input name="conversationId" type="hidden" value={selectedConversation.conversation.id} />
+                    <input name="filter" type="hidden" value={currentFilter} />
+                    <label className="label-stack">
+                      <span>Current status</span>
+                      <select
+                        className="input"
+                        defaultValue={selectedConversation.conversation.status}
+                        name="nextStatus"
+                      >
+                        {STATUS_OPTIONS.map((status) => (
+                          <option key={status} value={status}>
+                            {formatStatusLabel(status)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button className="button" type="submit">
+                      Save status
+                    </button>
+                  </form>
+                </article>
 
-            <article className="timeline-card">
-              <div className="inbox-pane-header">
-                <div>
-                  <p className="eyebrow">Timeline</p>
-                  <h3 className="section-title">Message history</h3>
-                </div>
+                <article className="meta-card stack">
+                  <div>
+                    <p className="eyebrow">Assignment</p>
+                    <h3 className="section-title">Responsible staff user</h3>
+                  </div>
+                  <form action={assignConversationAction} className="control-form">
+                    <input name="conversationId" type="hidden" value={selectedConversation.conversation.id} />
+                    <input name="filter" type="hidden" value={currentFilter} />
+                    <label className="label-stack">
+                      <span>Current assignee</span>
+                      <select
+                        className="input"
+                        defaultValue={selectedConversation.conversation.assignedHotelUserId ?? ""}
+                        name="assignedHotelUserId"
+                      >
+                        <option value="">Unassigned</option>
+                        {assignableHotelUsers.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {getAssignableHotelUserLabel(user)}
+                            {user.id === currentHotelUserId ? " (You)" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button className="button secondary-button" type="submit">
+                      Save assignment
+                    </button>
+                  </form>
+                </article>
               </div>
-              {selectedConversation.messages.length === 0 ? (
-                <p className="body-copy">This conversation does not have renderable text messages yet.</p>
-              ) : (
-                <div className="timeline-list">
-                  {selectedConversation.messages.map((message) => (
-                    <article
-                      className={`timeline-message timeline-message-${message.direction}`}
-                      key={message.id}
-                    >
-                      <div className="timeline-message-header">
-                        <strong>{message.direction === "inbound" ? "Guest" : "Hotel staff"}</strong>
-                        <span>{formatDateTime(message.deliveredAt ?? message.createdAt)}</span>
-                      </div>
-                      <p className="body-copy">{message.textBody}</p>
-                    </article>
-                  ))}
+
+              <article className="timeline-card">
+                <div className="inbox-pane-header">
+                  <div>
+                    <p className="eyebrow">Timeline</p>
+                    <h3 className="section-title">Message history</h3>
+                  </div>
                 </div>
-              )}
-            </article>
+                {selectedConversation.messages.length === 0 ? (
+                  <p className="body-copy">This conversation does not have renderable text messages yet.</p>
+                ) : (
+                  <div className="timeline-list">
+                    {selectedConversation.messages.map((message) => (
+                      <article
+                        className={`timeline-message timeline-message-${message.direction}`}
+                        key={message.id}
+                      >
+                        <div className="timeline-message-header">
+                          <strong>{message.direction === "inbound" ? "Guest" : "Hotel staff"}</strong>
+                          <span>{formatDateTime(message.deliveredAt ?? message.createdAt)}</span>
+                        </div>
+                        <p className="body-copy">{message.textBody}</p>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </article>
             </div>
           ) : (
             renderWorkspacePlaceholder(conversations, currentFilter, missingConversation)
@@ -386,7 +411,10 @@ export function InboxWorkspace({
               </div>
               <div className="stack">
                 <p className="body-copy mono">
-                  Telegram: {selectedConversation.guest.telegramUsername ? `@${selectedConversation.guest.telegramUsername}` : "Unknown"}
+                  Telegram:{" "}
+                  {selectedConversation.guest.telegramUsername
+                    ? `@${selectedConversation.guest.telegramUsername}`
+                    : "Unknown"}
                 </p>
                 <p className="body-copy mono">Language: {selectedConversation.guest.languageCode ?? "Unknown"}</p>
                 <p className="body-copy mono">
@@ -394,7 +422,7 @@ export function InboxWorkspace({
                 </p>
               </div>
             </article>
-            {renderDraftPanel(draftPanel)}
+            {renderDraftPanel(draftPanel, selectedConversation.conversation.id, currentFilter)}
           </div>
         ) : (
           <div className="stack">
@@ -403,9 +431,11 @@ export function InboxWorkspace({
                 <p className="eyebrow">Guest</p>
                 <h2 className="section-title">Guest summary will appear here</h2>
               </div>
-              <p className="body-copy">Open a conversation to inspect the normalized guest profile created by PH1-03.</p>
+              <p className="body-copy">
+                Open a conversation to inspect the normalized guest profile created by PH1-03.
+              </p>
             </article>
-            {renderDraftPanel(draftPanel)}
+            {renderDraftPanel(draftPanel, null, currentFilter)}
           </div>
         )}
       </aside>

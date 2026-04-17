@@ -198,17 +198,24 @@ export async function getConversationWorkspaceWithClient(
     return null;
   }
 
-  const [guestMap, messages, drafts] = await Promise.all([
+  const [guestMap, messages, draftsResult] = await Promise.all([
     getGuestsByIds(supabase, hotelId, [conversation.guest_id]),
     listConversationMessagesWithClient(supabase, hotelId, conversationId),
-    listLatestConversationDraftsWithClient(supabase, hotelId, conversationId),
+    listLatestConversationDraftsWithClient(supabase, hotelId, conversationId)
+      .then((drafts) => ({ ok: true as const, drafts }))
+      .catch((error) => ({
+        ok: false as const,
+        message: error instanceof Error ? error.message : "Drafts could not be loaded.",
+      })),
   ]);
 
   return createConversationWorkspaceDetail({
     conversation,
     guest: guestMap.get(conversation.guest_id) ?? null,
     messages,
-    draftPanel: createDraftPanelState({ state: "empty", drafts }),
+    draftPanel: draftsResult.ok
+      ? createDraftPanelState({ state: "empty", drafts: draftsResult.drafts })
+      : createDraftPanelState({ errorMessage: draftsResult.message }),
   });
 }
 

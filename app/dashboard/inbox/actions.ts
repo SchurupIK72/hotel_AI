@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireHotelUser } from "@/lib/auth/guards";
+import { regenerateConversationDrafts } from "@/lib/copilot/generation";
 import { assignConversation, updateConversationStatus } from "@/lib/conversations/operations";
 import { resolveInboxFilter } from "@/lib/conversations/models";
 
@@ -24,6 +25,22 @@ function buildInboxHref(conversationId: string, filter: string, keepConversation
 function withOperationMessage(path: string, operationStatus: "saved" | "error", message: string) {
   const separator = path.includes("?") ? "&" : "?";
   return `${path}${separator}operationStatus=${operationStatus}&message=${encodeURIComponent(message)}`;
+}
+
+function buildDraftOutcomeMessage(result: Awaited<ReturnType<typeof regenerateConversationDrafts>>) {
+  if (result.outcome === "generated") {
+    return `Generated ${result.drafts.length} draft${result.drafts.length === 1 ? "" : "s"}.`;
+  }
+
+  if (result.reason === "unsupported_request") {
+    return "Drafts were safely suppressed because this request needs human review.";
+  }
+
+  if (result.reason === "human_handoff_mode") {
+    return "Draft generation is suppressed while the conversation stays in human handoff mode.";
+  }
+
+  return "Drafts were downgraded to a safe non-answer state.";
 }
 
 export async function updateConversationStatusAction(formData: FormData) {
@@ -88,4 +105,31 @@ export async function assignConversationAction(formData: FormData) {
   const keepConversationSelected = filter !== "assigned_to_me" || result.conversation.assignedHotelUserId === access.hotelUserId;
   const message = result.conversation.assignedHotelUserId ? "Conversation assignment updated." : "Conversation unassigned.";
   redirect(withOperationMessage(buildInboxHref(conversationId, filter, keepConversationSelected), "saved", message));
+}
+
+export async function regenerateConversationDraftsAction(formData: FormData) {
+  const access = await requireHotelUser();
+  const conversationId = toValue(formData.get("conversationId"));
+  const filter = resolveInboxFilter(formData.get("filter")?.toString());
+
+  try {
+    const result = await regenerateConversationDrafts({
+      hotelId: access.hotelId,
+      conversationId,
+    });
+
+    revalidatePath("/dashboard/inbox");
+    revalidatePath(`/dashboard/inbox/${conversationId}`);
+    redirect(withOperationMessage(buildInboxHref(conversationId, filter, true), "saved", buildDraftOutcomeMessage(result)));
+  } catch (error) {
+    revalidatePath("/dashboard/inbox");
+    revalidatePath(`/dashboard/inbox/${conversationId}`);
+    redirect(
+      withOperationMessage(
+        buildInboxHref(conversationId, filter, true),
+        "error",
+        error instanceof Error ? error.message : "Draft regeneration failed.",
+      ),
+    );
+  }
 }

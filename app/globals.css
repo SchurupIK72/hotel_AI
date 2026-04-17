@@ -395,6 +395,11 @@ textarea {
   margin: 0;
 }
 
+.draft-meta-stack {
+  display: grid;
+  gap: 4px;
+}
+
 .timeline-list {
   display: grid;
   gap: 14px;

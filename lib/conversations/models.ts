@@ -128,6 +128,8 @@ export type ConversationDraftPanelState =
         label: string;
         body: string;
         confidenceLabel: string | null;
+        createdAt: string;
+        modelName: string | null;
         sourceType: StoredConversationDraft["sourceType"];
       }>;
     }
@@ -253,6 +255,8 @@ export function createDraftPanelState(input?: {
         label: `Draft ${draft.draftIndex}`,
         body: draft.draftText,
         confidenceLabel: draft.confidenceLabel,
+        createdAt: draft.createdAt,
+        modelName: draft.modelName,
         sourceType: draft.sourceType,
       })),
     } satisfies ConversationDraftPanelState;

@@ -566,8 +566,8 @@ Prove that draft generation is safe, stored, and visible to staff before outboun
 ## Implementation Progress
 
 Current status:
-- Stage 2 generation orchestration and safety gating completed on `feature/ph1-08-ai-draft-generation`
-- Ready for Stage 3 inbox workspace integration and regenerate flow
+- Stage 3 inbox workspace integration and regenerate flow completed on `feature/ph1-08-ai-draft-generation`
+- Ready for Stage 4 verification and PH1-09 handoff checks
 
 Completed:
 - [x] Defined PH1-08 product scope, safety rules, and boundaries with PH1-09
@@ -582,9 +582,11 @@ Completed:
 - [x] Added lightweight safety gating for unsupported transactional or sensitive requests
 - [x] Added automatic draft generation trigger after new inbound message persistence
 - [x] Added duplicate auto-generation protection by reusing latest drafts for the same source message
+- [x] Added draft metadata rendering inside the PH1-04 workspace panel
+- [x] Added manual regenerate action in the inbox workspace
+- [x] Added safe draft-panel error fallback without breaking the rest of the conversation workspace
 
 Pending implementation:
-- [ ] Stage 3 - Inbox workspace integration and regenerate flow
 - [ ] Stage 4 - Verification and handoff to PH1-09
 
 ---
