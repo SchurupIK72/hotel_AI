@@ -59,6 +59,12 @@ type MessageTimelineRow = Pick<
   | "delivered_at"
 >;
 
+export const PHASE1_CONVERSATION_STATUSES = ["new", "open", "pending", "closed"] as const;
+export const PHASE1_INBOX_FILTERS = ["all", "unread", "assigned_to_me"] as const;
+
+export type ConversationStatus = (typeof PHASE1_CONVERSATION_STATUSES)[number];
+export type InboxFilter = (typeof PHASE1_INBOX_FILTERS)[number];
+
 export type InboxConversationListItem = {
   id: string;
   guestId: string;
@@ -115,6 +121,14 @@ export type ConversationDraftPanelState =
   | { state: "empty"; title: string; message: string }
   | { state: "ready"; title: string; drafts: Array<{ id: string; label: string; body: string }> }
   | { state: "error"; title: string; message: string };
+
+export function isConversationStatus(value: string): value is ConversationStatus {
+  return PHASE1_CONVERSATION_STATUSES.includes(value as ConversationStatus);
+}
+
+export function isInboxFilter(value: string): value is InboxFilter {
+  return PHASE1_INBOX_FILTERS.includes(value as InboxFilter);
+}
 
 export type ConversationWorkspaceDetail = {
   conversation: {

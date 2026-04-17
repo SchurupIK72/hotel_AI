@@ -11,6 +11,9 @@ export type ActiveHotelMembership = {
 };
 
 type DatabaseClient = Awaited<ReturnType<typeof createServerSupabaseClient>>;
+type HotelUserRow = Database["public"]["Tables"]["hotel_users"]["Row"];
+
+export type AssignableHotelUser = Pick<HotelUserRow, "id" | "auth_user_id" | "role" | "full_name">;
 
 export async function findActiveHotelMembershipByAuthUserId(
   supabase: DatabaseClient,
@@ -59,4 +62,42 @@ export async function findActiveHotelMembershipByAuthUserId(
     hotelName: hotel?.name ?? null,
     hotelSlug: hotel?.slug ?? null,
   } satisfies ActiveHotelMembership;
+}
+
+export async function listActiveHotelUsersByHotelId(supabase: DatabaseClient, hotelId: string) {
+  const { data, error } = await supabase
+    .from("hotel_users")
+    .select("id, auth_user_id, role, full_name")
+    .eq("hotel_id", hotelId)
+    .eq("is_active", true)
+    .order("full_name", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as AssignableHotelUser[]).sort((left, right) =>
+    (left.full_name ?? "").localeCompare(right.full_name ?? "", "en"),
+  );
+}
+
+export async function findActiveHotelUserById(
+  supabase: DatabaseClient,
+  hotelId: string,
+  hotelUserId: string,
+) {
+  const { data, error } = await supabase
+    .from("hotel_users")
+    .select("id, auth_user_id, role, full_name")
+    .eq("hotel_id", hotelId)
+    .eq("is_active", true)
+    .eq("id", hotelUserId)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as AssignableHotelUser | null) ?? null;
 }
