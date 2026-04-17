@@ -566,8 +566,8 @@ Prove that draft generation is safe, stored, and visible to staff before outboun
 ## Implementation Progress
 
 Current status:
-- Stage 1 persistence and draft-panel read-model work completed on `feature/ph1-08-ai-draft-generation`
-- Ready for Stage 2 generation orchestration and safety gating
+- Stage 2 generation orchestration and safety gating completed on `feature/ph1-08-ai-draft-generation`
+- Ready for Stage 3 inbox workspace integration and regenerate flow
 
 Completed:
 - [x] Defined PH1-08 product scope, safety rules, and boundaries with PH1-09
@@ -578,9 +578,12 @@ Completed:
 - [x] Added `lib/copilot/*` Stage 1 models and latest-draft read helpers
 - [x] Wired the PH1-04 workspace draft panel to stored `empty` / `ready` / `error` states
 - [x] Added `test:ph1-08` helper checks for draft-generation persistence contracts
+- [x] Added generation orchestration that combines latest-message checks, PH1-07 retrieval, and safe draft result shaping
+- [x] Added lightweight safety gating for unsupported transactional or sensitive requests
+- [x] Added automatic draft generation trigger after new inbound message persistence
+- [x] Added duplicate auto-generation protection by reusing latest drafts for the same source message
 
 Pending implementation:
-- [ ] Stage 2 - Generation orchestration and safety gating
 - [ ] Stage 3 - Inbox workspace integration and regenerate flow
 - [ ] Stage 4 - Verification and handoff to PH1-09
 

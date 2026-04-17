@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import { AI_DRAFT_SOURCE_TYPES, AI_DRAFT_STATUSES, selectLatestDraftGeneration } from "../../lib/copilot/models.ts";
+import {
+  createDraftVariantsFromContext,
+  evaluateDraftGenerationSafety,
+} from "../../lib/copilot/generation-models.ts";
 import { createDraftPanelState } from "../../lib/conversations/models.ts";
 
 try {
@@ -68,6 +72,54 @@ try {
   assert.equal(readyPanel.drafts[0]?.label, "Draft 1");
   assert.equal(readyPanel.drafts[0]?.confidenceLabel, "knowledge-backed");
   assert.equal(readyPanel.drafts[1]?.sourceType, "kb");
+
+  const knowledgeResult = createDraftVariantsFromContext("What time is breakfast served?", "auto_on_inbound", {
+    status: "evidence_found",
+    guidanceMode: "answer_from_evidence",
+    evidence: [
+      {
+        itemType: "faq",
+        itemId: "faq-1",
+        hotelId: "hotel-1",
+        title: "Breakfast",
+        excerpt: "Breakfast is served daily from 07:00 to 10:30.",
+        score: 0.9,
+        retrievalReason: "direct_match",
+      },
+    ],
+  });
+  assert.equal(knowledgeResult.outcome, "generated");
+  assert.equal(knowledgeResult.drafts.length, 3);
+  assert.equal(knowledgeResult.drafts[0]?.sourceType, "kb");
+  assert.equal(knowledgeResult.drafts[0]?.confidenceLabel, "knowledge-backed");
+
+  const fallbackDecision = evaluateDraftGenerationSafety("Can you tell me more about breakfast?", {
+    status: "no_relevant_evidence",
+    guidanceMode: "clarify_or_escalate",
+    evidence: [],
+  });
+  assert.deepEqual(fallbackDecision, { action: "generate", mode: "clarification_fallback" });
+
+  const fallbackResult = createDraftVariantsFromContext("Can you tell me more about breakfast?", "manual_regenerate", {
+    status: "insufficient_evidence",
+    guidanceMode: "clarify_or_escalate",
+    evidence: [],
+  });
+  assert.equal(fallbackResult.outcome, "generated");
+  assert.equal(fallbackResult.drafts.length, 2);
+  assert.equal(fallbackResult.drafts[0]?.sourceType, "manual_trigger");
+  assert.equal(fallbackResult.drafts[0]?.confidenceLabel, "clarification-needed");
+
+  const suppressedResult = createDraftVariantsFromContext("Can I get a refund and change my booking?", "auto_on_inbound", {
+    status: "evidence_found",
+    guidanceMode: "answer_from_evidence",
+    evidence: [],
+  });
+  assert.deepEqual(suppressedResult, {
+    outcome: "suppressed",
+    reason: "unsupported_request",
+    retrievalStatus: "evidence_found",
+  });
 
   console.log("PH1-08 helper checks passed.");
 } catch (error) {
