@@ -3,7 +3,7 @@
 > **Created:** 2026-04-17
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P1
-> **Status:** Draft
+> **Status:** In Progress
 > **Depends on:** PH1-04 - Conversation Workspace UI
 
 ---
@@ -471,6 +471,24 @@ Make unread clearing behavior predictable and verifiable.
 
 - unread state transitions are deterministic and idempotent;
 - local verification can confirm assignment, status, unread clearing, and filter behavior.
+
+## Implementation Progress
+
+Current status:
+- Stage 1 backend helpers completed on `feature/ph1-05-conversation-operations`
+- Next target: Stage 2 inbox filter support
+
+Completed:
+- [x] Added Phase 1 status and inbox-filter contracts as shared workspace constants
+- [x] Added tenant-safe server helpers for status update, assignment/unassignment, and unread clearing
+- [x] Added active same-hotel assignable staff loaders
+- [x] Added `test:ph1-05` helper checks and kept `typecheck` / `test:ph1-04` green
+
+Pending:
+- [ ] Add inbox filter-aware list loading and UI controls
+- [ ] Add workspace status/assignment controls
+- [ ] Add unread-clearing interaction path in the workspace
+- [ ] Add smoke verification and manual flow notes
 
 ---
 
