@@ -1,14 +1,21 @@
 import Link from "next/link";
+import type { AssignableHotelUser } from "@/lib/db/hotel-users";
+import { assignConversationAction, updateConversationStatusAction } from "@/app/dashboard/inbox/actions";
 import type {
   ConversationDraftPanelState,
+  ConversationStatus,
   ConversationWorkspaceDetail,
   InboxFilter,
   InboxConversationListItem,
 } from "@/lib/conversations/models";
 
 type InboxWorkspaceProps = {
+  assignableHotelUsers: AssignableHotelUser[];
   conversations: InboxConversationListItem[];
   currentFilter: InboxFilter;
+  currentHotelUserId: string;
+  operationMessage?: string | null;
+  operationStatus?: "saved" | "error" | null;
   selectedConversationId?: string | null;
   selectedConversation: ConversationWorkspaceDetail | null;
   missingConversation?: boolean;
@@ -19,6 +26,7 @@ const FILTER_LINKS: Array<{ value: InboxFilter; label: string }> = [
   { value: "unread", label: "Unread" },
   { value: "assigned_to_me", label: "Assigned to me" },
 ];
+const STATUS_OPTIONS = ["new", "open", "pending", "closed"] as const satisfies readonly ConversationStatus[];
 
 function formatDateTime(value: string | null) {
   if (!value) {
@@ -64,6 +72,10 @@ function getEmptyListCopy(filter: InboxFilter) {
     title: "No conversations",
     message: "Guest threads will appear here after Telegram ingestion stores inbound messages.",
   };
+}
+
+function getAssignableHotelUserLabel(user: AssignableHotelUser) {
+  return user.full_name?.trim() || `${user.role.replaceAll("_", " ")} (${user.id.slice(0, 8)})`;
 }
 
 function renderDraftPanel(panel: ConversationDraftPanelState) {
@@ -146,8 +158,12 @@ function renderWorkspacePlaceholder(
 }
 
 export function InboxWorkspace({
+  assignableHotelUsers,
   conversations,
   currentFilter,
+  currentHotelUserId,
+  operationMessage,
+  operationStatus,
   selectedConversationId,
   selectedConversation,
   missingConversation = false,
@@ -157,6 +173,9 @@ export function InboxWorkspace({
     title: "Draft area reserved",
     message: "Select a conversation to see the draft placeholder that PH1-08 will later populate.",
   };
+  const assignedHotelUser =
+    selectedConversation &&
+    assignableHotelUsers.find((user) => user.id === selectedConversation.conversation.assignedHotelUserId);
 
   return (
     <div className="inbox-layout">
@@ -216,8 +235,14 @@ export function InboxWorkspace({
       </aside>
 
       <section className="inbox-pane inbox-detail-pane">
-        {selectedConversation ? (
-          <div className="stack">
+        <div className="stack">
+          {operationStatus && operationMessage ? (
+            <article className={`meta-card operation-banner operation-banner-${operationStatus}`}>
+              <p className={operationStatus === "error" ? "error-text" : "success-text"}>{operationMessage}</p>
+            </article>
+          ) : null}
+          {selectedConversation ? (
+            <div className="stack">
             <header className="inbox-pane-header">
               <div>
                 <p className="eyebrow">Conversation</p>
@@ -246,11 +271,73 @@ export function InboxWorkspace({
                 <div>
                   <span className="eyebrow">Assigned hotel user</span>
                   <p className="body-copy mono">
-                    {selectedConversation.conversation.assignedHotelUserId ?? "Unassigned"}
+                    {assignedHotelUser
+                      ? getAssignableHotelUserLabel(assignedHotelUser)
+                      : selectedConversation.conversation.assignedHotelUserId ?? "Unassigned"}
                   </p>
                 </div>
               </div>
             </article>
+
+            <div className="conversation-controls-grid">
+              <article className="meta-card stack">
+                <div>
+                  <p className="eyebrow">Status</p>
+                  <h3 className="section-title">Workflow state</h3>
+                </div>
+                <form action={updateConversationStatusAction} className="control-form">
+                  <input name="conversationId" type="hidden" value={selectedConversation.conversation.id} />
+                  <input name="filter" type="hidden" value={currentFilter} />
+                  <label className="label-stack">
+                    <span>Current status</span>
+                    <select
+                      className="input"
+                      defaultValue={selectedConversation.conversation.status}
+                      name="nextStatus"
+                    >
+                      {STATUS_OPTIONS.map((status) => (
+                        <option key={status} value={status}>
+                          {formatStatusLabel(status)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="button" type="submit">
+                    Save status
+                  </button>
+                </form>
+              </article>
+
+              <article className="meta-card stack">
+                <div>
+                  <p className="eyebrow">Assignment</p>
+                  <h3 className="section-title">Responsible staff user</h3>
+                </div>
+                <form action={assignConversationAction} className="control-form">
+                  <input name="conversationId" type="hidden" value={selectedConversation.conversation.id} />
+                  <input name="filter" type="hidden" value={currentFilter} />
+                  <label className="label-stack">
+                    <span>Current assignee</span>
+                    <select
+                      className="input"
+                      defaultValue={selectedConversation.conversation.assignedHotelUserId ?? ""}
+                      name="assignedHotelUserId"
+                    >
+                      <option value="">Unassigned</option>
+                      {assignableHotelUsers.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {getAssignableHotelUserLabel(user)}
+                          {user.id === currentHotelUserId ? " (You)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="button secondary-button" type="submit">
+                    Save assignment
+                  </button>
+                </form>
+              </article>
+            </div>
 
             <article className="timeline-card">
               <div className="inbox-pane-header">
@@ -278,10 +365,11 @@ export function InboxWorkspace({
                 </div>
               )}
             </article>
-          </div>
-        ) : (
-          renderWorkspacePlaceholder(conversations, currentFilter, missingConversation)
-        )}
+            </div>
+          ) : (
+            renderWorkspacePlaceholder(conversations, currentFilter, missingConversation)
+          )}
+        </div>
       </section>
 
       <aside className="inbox-pane inbox-sidebar-pane">

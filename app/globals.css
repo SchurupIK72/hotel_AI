@@ -359,10 +359,35 @@ textarea {
   padding: 20px;
 }
 
+.operation-banner {
+  padding: 14px 18px;
+}
+
+.operation-banner-saved {
+  border-color: rgba(31, 106, 67, 0.16);
+  background: #f1f9f3;
+}
+
+.operation-banner-error {
+  border-color: rgba(163, 47, 53, 0.16);
+  background: #fff4f4;
+}
+
 .conversation-detail-grid {
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.conversation-controls-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.control-form {
+  display: grid;
+  gap: 12px;
 }
 
 .conversation-detail-grid p,

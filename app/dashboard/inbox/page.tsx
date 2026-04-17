@@ -1,11 +1,14 @@
 import { InboxWorkspace } from "@/components/inbox/workspace";
 import { resolveInboxFilter, resolveSelectedConversationId } from "@/lib/conversations/models";
+import { listAssignableHotelUsers } from "@/lib/conversations/operations";
 import { getConversationWorkspace, listInboxConversations } from "@/lib/conversations/workspace";
 import { requireHotelUser } from "@/lib/auth/guards";
 
 type InboxPageProps = {
   searchParams?: Promise<{
     filter?: string;
+    operationStatus?: string;
+    message?: string;
   }>;
 };
 
@@ -18,9 +21,10 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
     currentHotelUserId: access.hotelUserId,
   });
   const selectedConversationId = resolveSelectedConversationId(conversations);
-  const selectedConversation = selectedConversationId
-    ? await getConversationWorkspace(access.hotelId, selectedConversationId)
-    : null;
+  const [selectedConversation, assignableHotelUsers] = await Promise.all([
+    selectedConversationId ? getConversationWorkspace(access.hotelId, selectedConversationId) : Promise.resolve(null),
+    listAssignableHotelUsers(access.hotelId),
+  ]);
 
   return (
     <section className="stack">
@@ -32,8 +36,12 @@ export default async function InboxPage({ searchParams }: InboxPageProps) {
         </p>
       </div>
       <InboxWorkspace
+        assignableHotelUsers={assignableHotelUsers}
         conversations={conversations}
         currentFilter={currentFilter}
+        currentHotelUserId={access.hotelUserId}
+        operationMessage={params?.message ?? null}
+        operationStatus={params?.operationStatus === "error" ? "error" : params?.operationStatus === "saved" ? "saved" : null}
         selectedConversation={selectedConversation}
         selectedConversationId={selectedConversationId}
       />
