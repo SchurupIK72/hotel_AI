@@ -475,17 +475,18 @@ Make unread clearing behavior predictable and verifiable.
 ## Implementation Progress
 
 Current status:
-- Stage 1 backend helpers completed on `feature/ph1-05-conversation-operations`
-- Next target: Stage 2 inbox filter support
+- Stage 2 inbox filter support completed on `feature/ph1-05-conversation-operations`
+- Next target: Stage 3 workspace controls for status and assignment
 
 Completed:
 - [x] Added Phase 1 status and inbox-filter contracts as shared workspace constants
 - [x] Added tenant-safe server helpers for status update, assignment/unassignment, and unread clearing
 - [x] Added active same-hotel assignable staff loaders
 - [x] Added `test:ph1-05` helper checks and kept `typecheck` / `test:ph1-04` green
+- [x] Added filter-aware inbox loading for `all`, `unread`, and `assigned_to_me`
+- [x] Added filter UI controls and filter-aware empty states in the workspace
 
 Pending:
-- [ ] Add inbox filter-aware list loading and UI controls
 - [ ] Add workspace status/assignment controls
 - [ ] Add unread-clearing interaction path in the workspace
 - [ ] Add smoke verification and manual flow notes

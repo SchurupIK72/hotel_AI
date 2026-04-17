@@ -252,6 +252,32 @@ textarea {
   gap: 12px;
 }
 
+.inbox-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inbox-filter-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border: 1px solid rgba(18, 59, 103, 0.12);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #355474;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.inbox-filter-link-selected {
+  border-color: rgba(18, 59, 103, 0.28);
+  background: #123b67;
+  color: #fff;
+}
+
 .conversation-row {
   display: grid;
   gap: 10px;

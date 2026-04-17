@@ -4,6 +4,7 @@ import {
   createConversationWorkspaceDetail,
   createDraftPanelState,
   createInboxConversationListItem,
+  type InboxFilter,
   type ConversationWorkspaceDetail,
   type InboxConversationListItem,
 } from "@/lib/conversations/models";
@@ -68,6 +69,11 @@ type MessageTimelineRow = Pick<
 >;
 
 export type WorkspaceSupabaseClient = Awaited<ReturnType<typeof createServerSupabaseClient>>;
+type ListInboxConversationsInput = {
+  hotelId: string;
+  filter?: InboxFilter;
+  currentHotelUserId?: string | null;
+};
 
 async function getGuestsByIds(
   supabase: WorkspaceSupabaseClient,
@@ -95,15 +101,29 @@ async function getGuestsByIds(
 
 export async function listInboxConversationsWithClient(
   supabase: WorkspaceSupabaseClient,
-  hotelId: string,
+  input: ListInboxConversationsInput,
 ): Promise<InboxConversationListItem[]> {
-  const { data, error } = await supabase
+  const filter = input.filter ?? "all";
+  if (filter === "assigned_to_me" && !input.currentHotelUserId) {
+    return [];
+  }
+
+  let query = supabase
     .from("conversations")
     .select(
       "id, guest_id, channel, status, mode, assigned_hotel_user_id, last_message_preview, last_message_at, last_inbound_message_at, unread_count, last_ai_draft_at",
     )
-    .eq("hotel_id", hotelId)
-    .order("last_message_at", { ascending: false });
+    .eq("hotel_id", input.hotelId);
+
+  if (filter === "unread") {
+    query = query.gt("unread_count", 0);
+  }
+
+  if (filter === "assigned_to_me") {
+    query = query.eq("assigned_hotel_user_id", input.currentHotelUserId as string);
+  }
+
+  const { data, error } = await query.order("last_message_at", { ascending: false });
 
   if (error) {
     throw error;
@@ -112,7 +132,7 @@ export async function listInboxConversationsWithClient(
   const conversations = (data ?? []) as ConversationListRow[];
   const guestMap = await getGuestsByIds(
     supabase,
-    hotelId,
+    input.hotelId,
     [...new Set(conversations.map((conversation) => conversation.guest_id))],
   );
 
@@ -121,9 +141,12 @@ export async function listInboxConversationsWithClient(
   );
 }
 
-export async function listInboxConversations(hotelId: string): Promise<InboxConversationListItem[]> {
+export async function listInboxConversations(
+  hotelId: string,
+  options?: Omit<ListInboxConversationsInput, "hotelId">,
+): Promise<InboxConversationListItem[]> {
   const supabase = await createServerSupabaseClient();
-  return listInboxConversationsWithClient(supabase, hotelId);
+  return listInboxConversationsWithClient(supabase, { hotelId, ...options });
 }
 
 export async function listConversationMessagesWithClient(

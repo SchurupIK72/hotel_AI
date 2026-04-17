@@ -4,6 +4,7 @@ import {
   PHASE1_INBOX_FILTERS,
   isConversationStatus,
   isInboxFilter,
+  resolveInboxFilter,
 } from "../../lib/conversations/models.ts";
 
 try {
@@ -16,6 +17,9 @@ try {
   assert.equal(isInboxFilter("all"), true);
   assert.equal(isInboxFilter("assigned_to_me"), true);
   assert.equal(isInboxFilter("mine"), false);
+  assert.equal(resolveInboxFilter("unread"), "unread");
+  assert.equal(resolveInboxFilter("mine"), "all");
+  assert.equal(resolveInboxFilter(undefined), "all");
 
   console.log("PH1-05 helper checks passed.");
 } catch (error) {

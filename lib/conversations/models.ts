@@ -130,6 +130,10 @@ export function isInboxFilter(value: string): value is InboxFilter {
   return PHASE1_INBOX_FILTERS.includes(value as InboxFilter);
 }
 
+export function resolveInboxFilter(value: string | null | undefined): InboxFilter {
+  return value && isInboxFilter(value) ? value : "all";
+}
+
 export type ConversationWorkspaceDetail = {
   conversation: {
     id: string;

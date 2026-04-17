@@ -1,11 +1,22 @@
 import { InboxWorkspace } from "@/components/inbox/workspace";
-import { resolveSelectedConversationId } from "@/lib/conversations/models";
+import { resolveInboxFilter, resolveSelectedConversationId } from "@/lib/conversations/models";
 import { getConversationWorkspace, listInboxConversations } from "@/lib/conversations/workspace";
 import { requireHotelUser } from "@/lib/auth/guards";
 
-export default async function InboxPage() {
+type InboxPageProps = {
+  searchParams?: Promise<{
+    filter?: string;
+  }>;
+};
+
+export default async function InboxPage({ searchParams }: InboxPageProps) {
   const access = await requireHotelUser();
-  const conversations = await listInboxConversations(access.hotelId);
+  const params = searchParams ? await searchParams : undefined;
+  const currentFilter = resolveInboxFilter(params?.filter);
+  const conversations = await listInboxConversations(access.hotelId, {
+    filter: currentFilter,
+    currentHotelUserId: access.hotelUserId,
+  });
   const selectedConversationId = resolveSelectedConversationId(conversations);
   const selectedConversation = selectedConversationId
     ? await getConversationWorkspace(access.hotelId, selectedConversationId)
@@ -22,6 +33,7 @@ export default async function InboxPage() {
       </div>
       <InboxWorkspace
         conversations={conversations}
+        currentFilter={currentFilter}
         selectedConversation={selectedConversation}
         selectedConversationId={selectedConversationId}
       />

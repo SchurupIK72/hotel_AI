@@ -2,15 +2,23 @@ import Link from "next/link";
 import type {
   ConversationDraftPanelState,
   ConversationWorkspaceDetail,
+  InboxFilter,
   InboxConversationListItem,
 } from "@/lib/conversations/models";
 
 type InboxWorkspaceProps = {
   conversations: InboxConversationListItem[];
+  currentFilter: InboxFilter;
   selectedConversationId?: string | null;
   selectedConversation: ConversationWorkspaceDetail | null;
   missingConversation?: boolean;
 };
+
+const FILTER_LINKS: Array<{ value: InboxFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "unread", label: "Unread" },
+  { value: "assigned_to_me", label: "Assigned to me" },
+];
 
 function formatDateTime(value: string | null) {
   if (!value) {
@@ -25,6 +33,37 @@ function formatDateTime(value: string | null) {
 
 function formatStatusLabel(value: string) {
   return value.replaceAll("_", " ");
+}
+
+function getFilterHref(filter: InboxFilter) {
+  return filter === "all" ? "/dashboard/inbox" : `/dashboard/inbox?filter=${filter}`;
+}
+
+function getConversationHref(conversationId: string, currentFilter: InboxFilter) {
+  return currentFilter === "all"
+    ? `/dashboard/inbox/${conversationId}`
+    : `/dashboard/inbox/${conversationId}?filter=${currentFilter}`;
+}
+
+function getEmptyListCopy(filter: InboxFilter) {
+  if (filter === "unread") {
+    return {
+      title: "No unread conversations",
+      message: "New inbound guest threads will reappear here as soon as unread messages are ingested.",
+    };
+  }
+
+  if (filter === "assigned_to_me") {
+    return {
+      title: "Nothing assigned to you",
+      message: "Once conversations are assigned to your hotel user, they will appear in this focused inbox view.",
+    };
+  }
+
+  return {
+    title: "No conversations",
+    message: "Guest threads will appear here after Telegram ingestion stores inbound messages.",
+  };
 }
 
 function renderDraftPanel(panel: ConversationDraftPanelState) {
@@ -56,7 +95,11 @@ function renderDraftPanel(panel: ConversationDraftPanelState) {
   );
 }
 
-function renderWorkspacePlaceholder(conversations: InboxConversationListItem[], missingConversation: boolean) {
+function renderWorkspacePlaceholder(
+  conversations: InboxConversationListItem[],
+  currentFilter: InboxFilter,
+  missingConversation: boolean,
+) {
   if (missingConversation) {
     return (
       <article className="meta-card stack">
@@ -72,18 +115,19 @@ function renderWorkspacePlaceholder(conversations: InboxConversationListItem[], 
   }
 
   if (conversations.length === 0) {
+    const emptyCopy = getEmptyListCopy(currentFilter);
     return (
       <article className="meta-card stack">
         <div>
-          <p className="eyebrow">Inbox empty</p>
-          <h2 className="section-title">No guest conversations yet</h2>
+          <p className="eyebrow">{currentFilter === "all" ? "Inbox empty" : "Filtered inbox empty"}</p>
+          <h2 className="section-title">{emptyCopy.title}</h2>
         </div>
-        <p className="body-copy">
-          Once PH1-03 ingestion receives Telegram guest messages, conversations will appear here for staff review.
-        </p>
-        <p className="body-copy">
-          If you are setting up the pipeline, check the Telegram settings page and deliver a supported text message first.
-        </p>
+        <p className="body-copy">{emptyCopy.message}</p>
+        {currentFilter === "all" ? (
+          <p className="body-copy">
+            If you are setting up the pipeline, check the Telegram settings page and deliver a supported text message first.
+          </p>
+        ) : null}
       </article>
     );
   }
@@ -103,6 +147,7 @@ function renderWorkspacePlaceholder(conversations: InboxConversationListItem[], 
 
 export function InboxWorkspace({
   conversations,
+  currentFilter,
   selectedConversationId,
   selectedConversation,
   missingConversation = false,
@@ -118,15 +163,26 @@ export function InboxWorkspace({
       <aside className="inbox-pane inbox-list-pane">
         <div className="inbox-pane-header">
           <div>
-            <p className="eyebrow">PH1-04</p>
+            <p className="eyebrow">PH1-05</p>
             <h2 className="section-title">Inbox</h2>
           </div>
           <span className="inbox-count">{conversations.length}</span>
         </div>
+        <div className="inbox-filter-bar" aria-label="Inbox filters">
+          {FILTER_LINKS.map((filter) => (
+            <Link
+              className={`inbox-filter-link${currentFilter === filter.value ? " inbox-filter-link-selected" : ""}`}
+              href={getFilterHref(filter.value)}
+              key={filter.value}
+            >
+              {filter.label}
+            </Link>
+          ))}
+        </div>
         {conversations.length === 0 ? (
           <article className="meta-card stack">
-            <h3 className="section-title">No conversations</h3>
-            <p className="body-copy">Guest threads will appear here after Telegram ingestion stores inbound messages.</p>
+            <h3 className="section-title">{getEmptyListCopy(currentFilter).title}</h3>
+            <p className="body-copy">{getEmptyListCopy(currentFilter).message}</p>
           </article>
         ) : (
           <div className="conversation-list">
@@ -135,7 +191,7 @@ export function InboxWorkspace({
               return (
                 <Link
                   className={`conversation-row${isSelected ? " conversation-row-selected" : ""}`}
-                  href={`/dashboard/inbox/${conversation.id}`}
+                  href={getConversationHref(conversation.id, currentFilter)}
                   key={conversation.id}
                 >
                   <div className="conversation-row-header">
@@ -224,7 +280,7 @@ export function InboxWorkspace({
             </article>
           </div>
         ) : (
-          renderWorkspacePlaceholder(conversations, missingConversation)
+          renderWorkspacePlaceholder(conversations, currentFilter, missingConversation)
         )}
       </section>
 
