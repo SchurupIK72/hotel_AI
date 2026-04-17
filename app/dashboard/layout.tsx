@@ -18,6 +18,7 @@ export default async function DashboardLayout({
           <nav className="dashboard-nav">
             <Link href="/dashboard">Overview</Link>
             <Link href="/dashboard/inbox">Inbox</Link>
+            {access.hotelRole === "hotel_admin" ? <Link href="/dashboard/knowledge">Knowledge</Link> : null}
             <Link href="/dashboard/settings/telegram">Telegram</Link>
           </nav>
         </div>

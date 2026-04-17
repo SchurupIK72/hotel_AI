@@ -28,6 +28,22 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </article>
+      {access.hotelRole === "hotel_admin" ? (
+        <article className="meta-card stack">
+          <div>
+            <p className="eyebrow">PH1-06</p>
+            <h2 className="section-title">Knowledge management is available</h2>
+          </div>
+          <p className="body-copy">
+            Curate hotel-approved FAQ and policy entries so later Copilot retrieval can rely on published tenant-safe knowledge.
+          </p>
+          <div>
+            <Link className="button dashboard-link-button" href="/dashboard/knowledge">
+              Open knowledge base
+            </Link>
+          </div>
+        </article>
+      ) : null}
       <div className="meta-grid">
         <article className="meta-card">
           <h2>User</h2>
