@@ -432,6 +432,57 @@ textarea {
   background: #f8fbff;
 }
 
+.knowledge-layout {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
+}
+
+.knowledge-form {
+  display: grid;
+  gap: 12px;
+}
+
+.knowledge-textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+.knowledge-card-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.knowledge-card {
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 12px 28px rgba(33, 55, 92, 0.08);
+}
+
+.knowledge-card-header,
+.knowledge-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.knowledge-meta-grid {
+  display: grid;
+  gap: 8px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.knowledge-meta-grid p {
+  margin: 0;
+}
+
+.knowledge-pill-draft {
+  background: #edf0f5;
+  color: #516276;
+}
+
 .loading-block {
   min-height: 320px;
   animation: pulse 1.4s ease-in-out infinite;
@@ -473,7 +524,9 @@ textarea {
 
   .conversation-row-footer,
   .timeline-message-header,
-  .inbox-pane-header {
+  .inbox-pane-header,
+  .knowledge-card-header,
+  .knowledge-action-row {
     align-items: flex-start;
     flex-direction: column;
   }
