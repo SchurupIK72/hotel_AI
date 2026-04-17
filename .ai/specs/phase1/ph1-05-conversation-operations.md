@@ -3,7 +3,7 @@
 > **Created:** 2026-04-17
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P1
-> **Status:** In Progress
+> **Status:** Completed
 > **Depends on:** PH1-04 - Conversation Workspace UI
 
 ---
@@ -475,8 +475,8 @@ Make unread clearing behavior predictable and verifiable.
 ## Implementation Progress
 
 Current status:
-- Stage 4 unread behavior and verification completed on `feature/ph1-05-conversation-operations`
-- PH1-05 implementation is complete on the feature branch and ready for browser smoke / merge flow
+- PH1-05 implementation completed on `feature/ph1-05-conversation-operations`
+- Automated verification and browser-level local smoke have passed; feature is ready for merge flow
 
 Completed:
 - [x] Added Phase 1 status and inbox-filter contracts as shared workspace constants
@@ -490,9 +490,7 @@ Completed:
 - [x] Added sanitized operation feedback and assignee name rendering in the workspace
 - [x] Locked unread clearing to explicit conversation detail-route open and kept filters deterministic
 - [x] Added `verify:ph1-05` live smoke verification and PH1-05 manual operation notes
-
-Pending:
-- [ ] Run browser-level manual smoke once before merge
+- [x] Completed browser-level local smoke against authenticated inbox routes before merge
 
 ---
 
