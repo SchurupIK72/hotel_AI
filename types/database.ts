@@ -308,6 +308,82 @@ export type Database = {
           created_at?: string;
         };
       };
+      faq_items: {
+        Row: {
+          id: string;
+          hotel_id: string;
+          question: string;
+          answer: string;
+          is_published: boolean;
+          published_at: string | null;
+          created_by_hotel_user_id: string;
+          updated_by_hotel_user_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          hotel_id: string;
+          question: string;
+          answer: string;
+          is_published?: boolean;
+          published_at?: string | null;
+          created_by_hotel_user_id: string;
+          updated_by_hotel_user_id: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          hotel_id?: string;
+          question?: string;
+          answer?: string;
+          is_published?: boolean;
+          published_at?: string | null;
+          created_by_hotel_user_id?: string;
+          updated_by_hotel_user_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      policy_items: {
+        Row: {
+          id: string;
+          hotel_id: string;
+          title: string;
+          body: string;
+          is_published: boolean;
+          published_at: string | null;
+          created_by_hotel_user_id: string;
+          updated_by_hotel_user_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          hotel_id: string;
+          title: string;
+          body: string;
+          is_published?: boolean;
+          published_at?: string | null;
+          created_by_hotel_user_id: string;
+          updated_by_hotel_user_id: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          hotel_id?: string;
+          title?: string;
+          body?: string;
+          is_published?: boolean;
+          published_at?: string | null;
+          created_by_hotel_user_id?: string;
+          updated_by_hotel_user_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
