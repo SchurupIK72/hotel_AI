@@ -1,8 +1,11 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 import {
+  DEFAULT_RETRIEVAL_EVIDENCE_LIMIT,
   createFaqRetrievalCandidate,
   createPolicyRetrievalCandidate,
+  rankKnowledgeEvidence,
+  type RetrieveKnowledgeInput,
   type KnowledgeRetrievalCandidate,
 } from "@/lib/knowledge/retrieval-models";
 
@@ -45,4 +48,25 @@ export async function listPublishedPolicyCandidatesWithClient(supabase: Knowledg
 export async function listPublishedPolicyCandidates(hotelId: string) {
   const supabase = await createServerSupabaseClient();
   return listPublishedPolicyCandidatesWithClient(supabase, hotelId);
+}
+
+export async function retrieveKnowledgeWithClient(
+  supabase: KnowledgeSupabaseClient,
+  input: RetrieveKnowledgeInput,
+) {
+  const [policyCandidates, faqCandidates] = await Promise.all([
+    listPublishedPolicyCandidatesWithClient(supabase, input.hotelId),
+    listPublishedFaqCandidatesWithClient(supabase, input.hotelId),
+  ]);
+
+  return rankKnowledgeEvidence(
+    input.messageText,
+    [...policyCandidates, ...faqCandidates],
+    input.maxEvidenceItems ?? DEFAULT_RETRIEVAL_EVIDENCE_LIMIT,
+  );
+}
+
+export async function retrieveKnowledge(input: RetrieveKnowledgeInput) {
+  const supabase = await createServerSupabaseClient();
+  return retrieveKnowledgeWithClient(supabase, input);
 }

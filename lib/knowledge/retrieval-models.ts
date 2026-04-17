@@ -43,13 +43,34 @@ export type KnowledgeRetrievalCandidate = {
 };
 
 export const DEFAULT_RETRIEVAL_EVIDENCE_LIMIT = 3;
+const MIN_QUERY_TOKEN_LENGTH = 3;
+const EVIDENCE_FOUND_THRESHOLD = 0.5;
+const INSUFFICIENT_EVIDENCE_THRESHOLD = 0.2;
+const MIN_INCLUDED_EVIDENCE_SCORE = 0.18;
+const POLICY_PRECEDENCE_EPSILON = 0.12;
 
 function normalizeRetrievalText(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+function truncateExcerpt(value: string, maxLength = 220) {
+  return value.length <= maxLength ? value : `${value.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
 function createSearchableText(title: string, body: string) {
   return normalizeRetrievalText(`${title} ${body}`);
+}
+
+export function tokenizeRetrievalQuery(value: string) {
+  const normalized = normalizeRetrievalText(value);
+  return Array.from(
+    new Set(
+      normalized
+        .split(/[^a-z0-9]+/i)
+        .map((token) => token.trim())
+        .filter((token) => token.length >= MIN_QUERY_TOKEN_LENGTH),
+    ),
+  );
 }
 
 export function createFaqRetrievalCandidate(row: FaqItemRow): KnowledgeRetrievalCandidate {
@@ -87,4 +108,97 @@ export function createRetrievalResult(
     guidanceMode: status === "evidence_found" ? "answer_from_evidence" : "clarify_or_escalate",
     evidence,
   };
+}
+
+export function createRetrievalEvidenceRef(
+  candidate: KnowledgeRetrievalCandidate,
+  score: number,
+  retrievalReason: RetrievalReason,
+): RetrievalEvidenceRef {
+  return {
+    itemType: candidate.itemType,
+    itemId: candidate.itemId,
+    hotelId: candidate.hotelId,
+    title: candidate.title,
+    excerpt: truncateExcerpt(candidate.body),
+    score: Number(score.toFixed(3)),
+    retrievalReason,
+  };
+}
+
+function scoreCandidateMatch(queryTokens: string[], candidate: KnowledgeRetrievalCandidate) {
+  if (queryTokens.length === 0) {
+    return { score: 0, retrievalReason: "supporting_match" as RetrievalReason };
+  }
+
+  const titleText = candidate.title.toLowerCase();
+  const bodyText = candidate.body.toLowerCase();
+  const titleHits = queryTokens.filter((token) => titleText.includes(token)).length;
+  const bodyHits = queryTokens.filter((token) => bodyText.includes(token)).length;
+  const titleRatio = titleHits / queryTokens.length;
+  const bodyRatio = bodyHits / queryTokens.length;
+  const policyBonus = candidate.itemType === "policy" && titleHits + bodyHits > 0 ? 0.12 : 0;
+  const score = Math.min(1, titleRatio * 0.65 + bodyRatio * 0.35 + policyBonus);
+
+  return {
+    score,
+    retrievalReason:
+      candidate.itemType === "policy" && score > 0
+        ? ("policy_precedence" as RetrievalReason)
+        : titleHits > 0
+          ? ("direct_match" as RetrievalReason)
+          : ("supporting_match" as RetrievalReason),
+  };
+}
+
+export function rankKnowledgeEvidence(
+  messageText: string,
+  candidates: KnowledgeRetrievalCandidate[],
+  maxEvidenceItems = DEFAULT_RETRIEVAL_EVIDENCE_LIMIT,
+): RetrievalResult {
+  const queryTokens = tokenizeRetrievalQuery(messageText);
+  if (queryTokens.length === 0) {
+    return createRetrievalResult("no_relevant_evidence");
+  }
+
+  const rankedEvidence = candidates
+    .map((candidate) => {
+      const ranking = scoreCandidateMatch(queryTokens, candidate);
+      return {
+        candidate,
+        score: ranking.score,
+        retrievalReason: ranking.retrievalReason,
+      };
+    })
+    .filter((item) => item.score >= MIN_INCLUDED_EVIDENCE_SCORE)
+    .sort((left, right) => {
+      if (
+        left.candidate.itemType !== right.candidate.itemType &&
+        Math.abs(right.score - left.score) <= POLICY_PRECEDENCE_EPSILON
+      ) {
+        return left.candidate.itemType === "policy" ? -1 : 1;
+      }
+      if (right.score !== left.score) return right.score - left.score;
+      if (left.candidate.itemType !== right.candidate.itemType) return left.candidate.itemType === "policy" ? -1 : 1;
+      if (left.candidate.updatedAt !== right.candidate.updatedAt) {
+        return right.candidate.updatedAt.localeCompare(left.candidate.updatedAt);
+      }
+      return left.candidate.itemId.localeCompare(right.candidate.itemId);
+    })
+    .slice(0, maxEvidenceItems)
+    .map((item) => createRetrievalEvidenceRef(item.candidate, item.score, item.retrievalReason));
+
+  if (rankedEvidence.length === 0) {
+    return createRetrievalResult("no_relevant_evidence");
+  }
+
+  const strongestScore = rankedEvidence[0]?.score ?? 0;
+  return createRetrievalResult(
+    strongestScore >= EVIDENCE_FOUND_THRESHOLD
+      ? "evidence_found"
+      : strongestScore >= INSUFFICIENT_EVIDENCE_THRESHOLD
+        ? "insufficient_evidence"
+        : "no_relevant_evidence",
+    strongestScore >= INSUFFICIENT_EVIDENCE_THRESHOLD ? rankedEvidence : [],
+  );
 }

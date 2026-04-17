@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import {
   DEFAULT_RETRIEVAL_EVIDENCE_LIMIT,
+  createRetrievalEvidenceRef,
   createFaqRetrievalCandidate,
   createPolicyRetrievalCandidate,
   createRetrievalResult,
+  rankKnowledgeEvidence,
+  tokenizeRetrievalQuery,
 } from "../../lib/knowledge/retrieval-models.ts";
 
 try {
@@ -41,6 +44,7 @@ try {
   assert.equal(policyCandidate.itemType, "policy");
   assert.equal(policyCandidate.publishedAt, "2026-04-17T12:00:00.000Z");
   assert.equal(policyCandidate.searchableText, "late checkout late checkout is subject to availability.");
+  assert.deepEqual(tokenizeRetrievalQuery("  Need late checkout after breakfast! "), ["need", "late", "checkout", "after", "breakfast"]);
 
   const evidenceResult = createRetrievalResult("evidence_found", [
     {
@@ -59,6 +63,47 @@ try {
   const fallbackResult = createRetrievalResult("no_relevant_evidence");
   assert.equal(fallbackResult.guidanceMode, "clarify_or_escalate");
   assert.deepEqual(fallbackResult.evidence, []);
+
+  const evidenceRef = createRetrievalEvidenceRef(policyCandidate, 0.9234, "policy_precedence");
+  assert.equal(evidenceRef.score, 0.923);
+  assert.equal(evidenceRef.excerpt, "Late checkout is subject to availability.");
+
+  const rankedResult = rankKnowledgeEvidence(
+    "Can I request late checkout availability?",
+    [
+      faqCandidate,
+      policyCandidate,
+      {
+        ...faqCandidate,
+        itemId: "faq-2",
+        title: "Late checkout request",
+        body: "Late checkout can be requested at the front desk.",
+        searchableText: "late checkout request late checkout can be requested at the front desk.",
+      },
+    ],
+    2,
+  );
+  assert.equal(rankedResult.status, "evidence_found");
+  assert.equal(rankedResult.evidence.length, 2);
+  assert.equal(rankedResult.evidence[0]?.itemType, "policy");
+  assert.equal(rankedResult.evidence[0]?.retrievalReason, "policy_precedence");
+
+  const insufficientResult = rankKnowledgeEvidence(
+    "Do you have breakfast and parking?",
+    [faqCandidate],
+    2,
+  );
+  assert.equal(insufficientResult.status, "insufficient_evidence");
+  assert.equal(insufficientResult.guidanceMode, "clarify_or_escalate");
+  assert.equal(insufficientResult.evidence.length, 1);
+
+  const noEvidenceResult = rankKnowledgeEvidence(
+    "Hi",
+    [faqCandidate, policyCandidate],
+    2,
+  );
+  assert.equal(noEvidenceResult.status, "no_relevant_evidence");
+  assert.deepEqual(noEvidenceResult.evidence, []);
 
   console.log("PH1-07 helper checks passed.");
 } catch (error) {

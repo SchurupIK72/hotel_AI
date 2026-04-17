@@ -456,17 +456,19 @@ Prove that published knowledge is retrievable and unpublished knowledge is ignor
 ## Implementation Progress
 
 Current status:
-- Stage 1 retrieval contracts and candidate loaders completed on `feature/ph1-07-knowledge-retrieval`
-- Next target: Stage 2 deterministic ranking and precedence behavior
+- Stage 2 deterministic ranking and precedence behavior completed on `feature/ph1-07-knowledge-retrieval`
+- Next target: Stage 3 observability and PH1-08 handoff contract
 
 Completed:
 - [x] Defined PH1-07 product scope, retrieval rules, and handoff boundaries with PH1-08
 - [x] Added typed retrieval contracts and normalized retrieval result helpers
 - [x] Added published FAQ and policy candidate loaders scoped by `hotel_id`
 - [x] Added `test:ph1-07` helper checks for retrieval candidate and fallback contracts
+- [x] Added deterministic evidence ranking with explicit fallback states
+- [x] Added policy-over-FAQ precedence in the ranking layer
+- [x] Added `retrieveKnowledge(...)` helper that combines published candidate loading and ranking
 
 Pending:
-- [ ] Add deterministic ranking and precedence behavior
 - [ ] Add retrieval observability and PH1-08 handoff contract wiring
 - [ ] Add live smoke verification and manual PH1-07 retrieval notes
 
