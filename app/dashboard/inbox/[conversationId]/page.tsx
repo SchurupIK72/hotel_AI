@@ -1,7 +1,7 @@
 import { InboxWorkspace } from "@/components/inbox/workspace";
 import { notFound } from "next/navigation";
 import { resolveInboxFilter } from "@/lib/conversations/models";
-import { listAssignableHotelUsers } from "@/lib/conversations/operations";
+import { clearConversationUnread, listAssignableHotelUsers } from "@/lib/conversations/operations";
 import { getConversationWorkspace, listInboxConversations } from "@/lib/conversations/workspace";
 import { requireHotelUser } from "@/lib/auth/guards";
 
@@ -24,6 +24,11 @@ export default async function ConversationWorkspacePage({
   const { conversationId } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const currentFilter = resolveInboxFilter(resolvedSearchParams?.filter);
+  await clearConversationUnread({
+    hotelId: access.hotelId,
+    conversationId,
+    actorHotelUserId: access.hotelUserId,
+  });
   const [conversations, selectedConversation, assignableHotelUsers] = await Promise.all([
     listInboxConversations(access.hotelId, {
       filter: currentFilter,
