@@ -261,6 +261,20 @@ Once PH1-03 ingestion has created at least one conversation, you can verify the 
    - the draft panel shows the PH1-04 placeholder state
 7. Open a fake conversation URL such as `http://localhost:3000/dashboard/inbox/not-a-real-id` and confirm the app shows a safe not-found experience
 
+## PH1-05 Manual Operations Smoke Check
+
+Once the inbox contains at least one unread conversation, you can verify the PH1-05 operations flow manually:
+
+1. Start the app with `npm.cmd run dev`
+2. Sign in at `http://localhost:3000/sign-in`
+3. Open `http://localhost:3000/dashboard/inbox?filter=unread`
+4. Open one unread conversation from the list and confirm:
+   - the conversation disappears from the `unread` filter after the explicit detail route opens
+   - the workspace still shows the selected conversation safely
+5. Change the status to `pending` and confirm the banner reports a saved operation
+6. Assign the conversation to yourself and confirm it appears under `http://localhost:3000/dashboard/inbox?filter=assigned_to_me`
+7. Unassign the conversation and confirm it disappears from `assigned_to_me`
+
 ## Important Notes
 
 - `supabase/seed.sql` is used for reproducible database seed data.

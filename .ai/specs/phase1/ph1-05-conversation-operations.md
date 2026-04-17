@@ -475,8 +475,8 @@ Make unread clearing behavior predictable and verifiable.
 ## Implementation Progress
 
 Current status:
-- Stage 3 workspace controls completed on `feature/ph1-05-conversation-operations`
-- Next target: Stage 4 unread behavior and verification
+- Stage 4 unread behavior and verification completed on `feature/ph1-05-conversation-operations`
+- PH1-05 implementation is complete on the feature branch and ready for browser smoke / merge flow
 
 Completed:
 - [x] Added Phase 1 status and inbox-filter contracts as shared workspace constants
@@ -488,10 +488,11 @@ Completed:
 - [x] Added workspace status update control with server-side revalidation flow
 - [x] Added assignment and unassignment control with same-hotel staff options
 - [x] Added sanitized operation feedback and assignee name rendering in the workspace
+- [x] Locked unread clearing to explicit conversation detail-route open and kept filters deterministic
+- [x] Added `verify:ph1-05` live smoke verification and PH1-05 manual operation notes
 
 Pending:
-- [ ] Add unread-clearing interaction path in the workspace
-- [ ] Add smoke verification and manual flow notes
+- [ ] Run browser-level manual smoke once before merge
 
 ---
 
@@ -567,7 +568,8 @@ npm run verify:ph1-05
 Execution note:
 
 - PH1-05 should be validated on top of the PH1-04 workspace rather than through isolated mutation helpers only;
-- smoke verification must confirm that filters and visible workspace state stay consistent after operations.
+- smoke verification must confirm that filters and visible workspace state stay consistent after operations;
+- the chosen unread rule for PH1-05 is: unread clears automatically when staff opens an explicit `/dashboard/inbox/[conversationId]` workspace route.
 
 ---
 
