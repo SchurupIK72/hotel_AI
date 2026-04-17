@@ -1,7 +1,10 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
+import { createEventLogSafely } from "@/lib/events/event-logs";
 import {
   DEFAULT_RETRIEVAL_EVIDENCE_LIMIT,
+  createCompactEvidenceSummaries,
+  createRetrievalHandoffContract,
   createFaqRetrievalCandidate,
   createPolicyRetrievalCandidate,
   rankKnowledgeEvidence,
@@ -67,6 +70,34 @@ export async function retrieveKnowledgeWithClient(
 }
 
 export async function retrieveKnowledge(input: RetrieveKnowledgeInput) {
+  await createEventLogSafely({
+    hotelId: input.hotelId,
+    entityType: "conversation",
+    entityId: input.conversationId,
+    eventType: "kb_retrieval_requested",
+    payload: {
+      messageId: input.messageId,
+      requestedEvidenceLimit: input.maxEvidenceItems ?? DEFAULT_RETRIEVAL_EVIDENCE_LIMIT,
+    },
+  });
+
   const supabase = await createServerSupabaseClient();
-  return retrieveKnowledgeWithClient(supabase, input);
+  const result = await retrieveKnowledgeWithClient(supabase, input);
+  const handoff = createRetrievalHandoffContract(result);
+
+  await createEventLogSafely({
+    hotelId: input.hotelId,
+    entityType: "conversation",
+    entityId: input.conversationId,
+    eventType: "kb_retrieval_completed",
+    payload: {
+      messageId: input.messageId,
+      retrievalStatus: handoff.retrievalStatus,
+      guidanceMode: handoff.guidanceMode,
+      evidenceCount: handoff.evidenceRefs.length,
+      evidenceSummary: createCompactEvidenceSummaries(handoff.evidenceRefs),
+    },
+  });
+
+  return result;
 }

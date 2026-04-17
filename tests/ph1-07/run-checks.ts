@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import {
   DEFAULT_RETRIEVAL_EVIDENCE_LIMIT,
+  createCompactEvidenceSummaries,
   createRetrievalEvidenceRef,
+  createRetrievalHandoffContract,
   createFaqRetrievalCandidate,
   createPolicyRetrievalCandidate,
   createRetrievalResult,
@@ -67,6 +69,15 @@ try {
   const evidenceRef = createRetrievalEvidenceRef(policyCandidate, 0.9234, "policy_precedence");
   assert.equal(evidenceRef.score, 0.923);
   assert.equal(evidenceRef.excerpt, "Late checkout is subject to availability.");
+  assert.deepEqual(createCompactEvidenceSummaries([evidenceRef]), [
+    {
+      itemType: "policy",
+      itemId: "policy-1",
+      title: "Late checkout",
+      score: 0.923,
+      retrievalReason: "policy_precedence",
+    },
+  ]);
 
   const rankedResult = rankKnowledgeEvidence(
     "Can I request late checkout availability?",
@@ -87,6 +98,12 @@ try {
   assert.equal(rankedResult.evidence.length, 2);
   assert.equal(rankedResult.evidence[0]?.itemType, "policy");
   assert.equal(rankedResult.evidence[0]?.retrievalReason, "policy_precedence");
+
+  const handoffContract = createRetrievalHandoffContract(rankedResult);
+  assert.equal(handoffContract.retrievalStatus, "evidence_found");
+  assert.equal(handoffContract.guidanceMode, "answer_from_evidence");
+  assert.equal(handoffContract.evidenceRefs.length, rankedResult.evidence.length);
+  assert.equal(handoffContract.evidenceSummary[0]?.itemType, "policy");
 
   const insufficientResult = rankKnowledgeEvidence(
     "Do you have breakfast and parking?",

@@ -31,6 +31,21 @@ export type RetrievalResult = {
   evidence: RetrievalEvidenceRef[];
 };
 
+export type CompactRetrievalEvidenceSummary = {
+  itemType: "faq" | "policy";
+  itemId: string;
+  title: string;
+  score: number;
+  retrievalReason: RetrievalReason;
+};
+
+export type RetrievalHandoffContract = {
+  retrievalStatus: RetrievalStatus;
+  guidanceMode: RetrievalGuidanceMode;
+  evidenceRefs: RetrievalEvidenceRef[];
+  evidenceSummary: CompactRetrievalEvidenceSummary[];
+};
+
 export type KnowledgeRetrievalCandidate = {
   itemType: "faq" | "policy";
   itemId: string;
@@ -123,6 +138,29 @@ export function createRetrievalEvidenceRef(
     excerpt: truncateExcerpt(candidate.body),
     score: Number(score.toFixed(3)),
     retrievalReason,
+  };
+}
+
+export function createCompactEvidenceSummaries(
+  evidence: RetrievalEvidenceRef[],
+): CompactRetrievalEvidenceSummary[] {
+  return evidence.map((item) => ({
+    itemType: item.itemType,
+    itemId: item.itemId,
+    title: item.title,
+    score: item.score,
+    retrievalReason: item.retrievalReason,
+  }));
+}
+
+export function createRetrievalHandoffContract(
+  result: RetrievalResult,
+): RetrievalHandoffContract {
+  return {
+    retrievalStatus: result.status,
+    guidanceMode: result.guidanceMode,
+    evidenceRefs: result.evidence,
+    evidenceSummary: createCompactEvidenceSummaries(result.evidence),
   };
 }
 

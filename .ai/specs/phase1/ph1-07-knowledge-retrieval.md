@@ -456,8 +456,8 @@ Prove that published knowledge is retrievable and unpublished knowledge is ignor
 ## Implementation Progress
 
 Current status:
-- Stage 2 deterministic ranking and precedence behavior completed on `feature/ph1-07-knowledge-retrieval`
-- Next target: Stage 3 observability and PH1-08 handoff contract
+- Stage 3 observability and PH1-08 handoff contract completed on `feature/ph1-07-knowledge-retrieval`
+- Next target: Stage 4 verification and retrieval smoke flow
 
 Completed:
 - [x] Defined PH1-07 product scope, retrieval rules, and handoff boundaries with PH1-08
@@ -467,9 +467,11 @@ Completed:
 - [x] Added deterministic evidence ranking with explicit fallback states
 - [x] Added policy-over-FAQ precedence in the ranking layer
 - [x] Added `retrieveKnowledge(...)` helper that combines published candidate loading and ranking
+- [x] Added `kb_retrieval_requested` / `kb_retrieval_completed` event emission
+- [x] Added compact evidence summaries for retrieval observability payloads
+- [x] Added PH1-08-facing retrieval handoff contract helpers
 
 Pending:
-- [ ] Add retrieval observability and PH1-08 handoff contract wiring
 - [ ] Add live smoke verification and manual PH1-07 retrieval notes
 
 ---
