@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { listLatestConversationDraftsWithClient } from "@/lib/copilot/store";
 import type { Database } from "@/types/database";
 import {
   createConversationWorkspaceDetail,
@@ -197,14 +198,17 @@ export async function getConversationWorkspaceWithClient(
     return null;
   }
 
-  const guestMap = await getGuestsByIds(supabase, hotelId, [conversation.guest_id]);
-  const messages = await listConversationMessagesWithClient(supabase, hotelId, conversationId);
+  const [guestMap, messages, drafts] = await Promise.all([
+    getGuestsByIds(supabase, hotelId, [conversation.guest_id]),
+    listConversationMessagesWithClient(supabase, hotelId, conversationId),
+    listLatestConversationDraftsWithClient(supabase, hotelId, conversationId),
+  ]);
 
   return createConversationWorkspaceDetail({
     conversation,
     guest: guestMap.get(conversation.guest_id) ?? null,
     messages,
-    draftPanel: createDraftPanelState(),
+    draftPanel: createDraftPanelState({ state: "empty", drafts }),
   });
 }
 

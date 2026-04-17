@@ -3,7 +3,7 @@
 > **Created:** 2026-04-17
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** Draft
+> **Status:** In Progress
 > **Depends on:** PH1-03 - Inbound Messaging Ingestion, PH1-04 - Conversation Workspace, PH1-07 - Knowledge Retrieval
 
 ---
@@ -566,17 +566,20 @@ Prove that draft generation is safe, stored, and visible to staff before outboun
 ## Implementation Progress
 
 Current status:
-- Specification defined; implementation has not started yet
-- Ready for `spec-implementer` on `feature/ph1-08-ai-draft-generation`
+- Stage 1 persistence and draft-panel read-model work completed on `feature/ph1-08-ai-draft-generation`
+- Ready for Stage 2 generation orchestration and safety gating
 
 Completed:
 - [x] Defined PH1-08 product scope, safety rules, and boundaries with PH1-09
 - [x] Defined durable `ai_drafts` persistence direction and workspace state expectations
 - [x] Defined generation, suppression, and regenerate contracts
 - [x] Defined staged implementation and verification plan
+- [x] Added `ai_drafts` schema and typed database surface for persistent AI draft records
+- [x] Added `lib/copilot/*` Stage 1 models and latest-draft read helpers
+- [x] Wired the PH1-04 workspace draft panel to stored `empty` / `ready` / `error` states
+- [x] Added `test:ph1-08` helper checks for draft-generation persistence contracts
 
 Pending implementation:
-- [ ] Stage 1 - AI draft persistence and generation contracts
 - [ ] Stage 2 - Generation orchestration and safety gating
 - [ ] Stage 3 - Inbox workspace integration and regenerate flow
 - [ ] Stage 4 - Verification and handoff to PH1-09

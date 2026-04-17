@@ -88,8 +88,12 @@ function renderDraftPanel(panel: ConversationDraftPanelState) {
         </div>
         {panel.drafts.map((draft) => (
           <section className="draft-card stack" key={draft.id}>
-            <strong>{draft.label}</strong>
+            <strong>
+              {draft.label}
+              {draft.confidenceLabel ? ` · ${draft.confidenceLabel}` : ""}
+            </strong>
             <p className="body-copy">{draft.body}</p>
+            <p className="conversation-meta mono">Source: {draft.sourceType}</p>
           </section>
         ))}
       </article>

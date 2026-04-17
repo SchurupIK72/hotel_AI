@@ -54,6 +54,41 @@ try {
     message: "This conversation does not have stored drafts yet.",
   });
 
+  assert.deepEqual(
+    createDraftPanelState({
+      drafts: [
+        {
+          id: "draft-1",
+          generationId: "generation-1",
+          hotelId: "hotel-1",
+          conversationId: "conversation-1",
+          messageId: "message-1",
+          draftIndex: 1,
+          draftText: "Breakfast is served from 07:00 to 10:30.",
+          sourceType: "kb",
+          status: "generated",
+          retrievalRefs: [],
+          modelName: "gpt-phase1",
+          confidenceLabel: "knowledge-backed",
+          createdAt: "2026-04-18T09:00:00.000Z",
+        },
+      ],
+    }),
+    {
+      state: "ready",
+      title: "Latest AI drafts",
+      drafts: [
+        {
+          id: "draft-1",
+          label: "Draft 1",
+          body: "Breakfast is served from 07:00 to 10:30.",
+          confidenceLabel: "knowledge-backed",
+          sourceType: "kb",
+        },
+      ],
+    },
+  );
+
   assert.deepEqual(createDraftPanelState({ errorMessage: "temporary failure" }), {
     state: "error",
     title: "Draft panel unavailable",

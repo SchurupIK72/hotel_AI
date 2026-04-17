@@ -1,4 +1,5 @@
 import type { Database } from "@/types/database";
+import type { StoredConversationDraft } from "@/lib/copilot/models";
 
 type ConversationRow = Database["public"]["Tables"]["conversations"]["Row"];
 type GuestRow = Database["public"]["Tables"]["guests"]["Row"];
@@ -119,7 +120,17 @@ export type ConversationMessageTimelineItem = {
 export type ConversationDraftPanelState =
   | { state: "not_available_yet"; title: string; message: string }
   | { state: "empty"; title: string; message: string }
-  | { state: "ready"; title: string; drafts: Array<{ id: string; label: string; body: string }> }
+  | {
+      state: "ready";
+      title: string;
+      drafts: Array<{
+        id: string;
+        label: string;
+        body: string;
+        confidenceLabel: string | null;
+        sourceType: StoredConversationDraft["sourceType"];
+      }>;
+    }
   | { state: "error"; title: string; message: string };
 
 export function isConversationStatus(value: string): value is ConversationStatus {
@@ -223,12 +234,27 @@ export function createDraftPanelState(input?: {
   state?: "not_available_yet" | "empty";
   message?: string | null;
   errorMessage?: string | null;
+  drafts?: StoredConversationDraft[] | null;
 }) {
   if (input?.errorMessage) {
     return {
       state: "error",
       title: "Draft panel unavailable",
       message: input.errorMessage,
+    } satisfies ConversationDraftPanelState;
+  }
+
+  if (input?.drafts?.length) {
+    return {
+      state: "ready",
+      title: "Latest AI drafts",
+      drafts: input.drafts.map((draft) => ({
+        id: draft.id,
+        label: `Draft ${draft.draftIndex}`,
+        body: draft.draftText,
+        confidenceLabel: draft.confidenceLabel,
+        sourceType: draft.sourceType,
+      })),
     } satisfies ConversationDraftPanelState;
   }
 

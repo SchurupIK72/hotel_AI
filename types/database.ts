@@ -308,6 +308,53 @@ export type Database = {
           created_at?: string;
         };
       };
+      ai_drafts: {
+        Row: {
+          id: string;
+          generation_id: string;
+          hotel_id: string;
+          conversation_id: string;
+          message_id: string;
+          draft_index: number;
+          draft_text: string;
+          source_type: "kb" | "fallback" | "manual_trigger";
+          status: "generated" | "selected" | "sent" | "discarded";
+          retrieval_refs: Json | null;
+          model_name: string | null;
+          confidence_label: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          generation_id?: string;
+          hotel_id: string;
+          conversation_id: string;
+          message_id: string;
+          draft_index: number;
+          draft_text: string;
+          source_type: "kb" | "fallback" | "manual_trigger";
+          status?: "generated" | "selected" | "sent" | "discarded";
+          retrieval_refs?: Json | null;
+          model_name?: string | null;
+          confidence_label?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          generation_id?: string;
+          hotel_id?: string;
+          conversation_id?: string;
+          message_id?: string;
+          draft_index?: number;
+          draft_text?: string;
+          source_type?: "kb" | "fallback" | "manual_trigger";
+          status?: "generated" | "selected" | "sent" | "discarded";
+          retrieval_refs?: Json | null;
+          model_name?: string | null;
+          confidence_label?: string | null;
+          created_at?: string;
+        };
+      };
       faq_items: {
         Row: {
           id: string;
