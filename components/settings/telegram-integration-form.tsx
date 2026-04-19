@@ -3,14 +3,21 @@ import type { TelegramIntegrationSummary } from "@/lib/telegram/integrations";
 
 type TelegramIntegrationFormProps = {
   activeIntegration: TelegramIntegrationSummary | null;
+  hotelId: string | null;
+  supportMode: boolean;
 };
 
-export function TelegramIntegrationForm({ activeIntegration }: TelegramIntegrationFormProps) {
+export function TelegramIntegrationForm({
+  activeIntegration,
+  hotelId,
+  supportMode,
+}: TelegramIntegrationFormProps) {
   return (
     <form action={saveTelegramIntegrationAction} className="card form-stack">
+      <input name="hotelId" type="hidden" value={hotelId ?? ""} />
       <div className="stack">
         <div>
-          <p className="eyebrow">Hotel Admin Only</p>
+          <p className="eyebrow">{supportMode ? "Internal Support" : "Hotel Admin Only"}</p>
           <h2 className="title section-title">
             {activeIntegration ? "Rotate or update Telegram bot" : "Connect Telegram bot"}
           </h2>

@@ -21,6 +21,7 @@
     "supabase:status:env": "supabase status -o env",
     "demo:bootstrap": "node ./scripts/bootstrap-local-demo.mjs",
     "verify:ph1-01": "node ./scripts/verify-ph1-01-smoke.mjs",
+    "verify:ph1-02": "node --experimental-strip-types ./scripts/verify-ph1-02-smoke.ts",
     "verify:ph1-03": "node --experimental-strip-types ./scripts/verify-ph1-03-smoke.ts",
     "verify:ph1-04": "node --experimental-strip-types ./scripts/verify-ph1-04-smoke.ts",
     "verify:ph1-05": "node --experimental-strip-types ./scripts/verify-ph1-05-smoke.ts",

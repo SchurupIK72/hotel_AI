@@ -4,7 +4,12 @@ import {
   AuthorizationError,
   isMissingAuthSessionError,
 } from "@/lib/auth/errors";
+import {
+  resolveTelegramSettingsAccessFromContext,
+  type TelegramSettingsAccess,
+} from "@/lib/auth/telegram-settings-access";
 import type { AccessContext, SuperAdminAccessContext } from "@/lib/auth/types";
+import { findHotelById } from "@/lib/db/hotels";
 import { findActiveHotelMembershipByAuthUserId } from "@/lib/db/hotel-users";
 import { getSuperAdminEmails } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -75,3 +80,16 @@ export const getAccessContext = cache(async (): Promise<AccessContext> => {
     hotelRole: membership.hotelRole,
   };
 });
+
+export async function resolveTelegramSettingsAccess(
+  requestedHotelId?: string | null,
+): Promise<TelegramSettingsAccess> {
+  const access = await getAccessContext();
+  const normalizedHotelId = requestedHotelId?.trim() ?? "";
+  const targetHotel = normalizedHotelId ? await findHotelById(normalizedHotelId) : null;
+
+  return resolveTelegramSettingsAccessFromContext(access, {
+    requestedHotelId,
+    targetHotel,
+  });
+}

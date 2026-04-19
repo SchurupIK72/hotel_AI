@@ -102,6 +102,38 @@ async function main() {
     throw new Error(`Expected PH1-04 smoke setup to ingest a message, got ${ingestResult.status}.`);
   }
 
+  const { data: createdGuestRow, error: createdGuestError } = await supabase
+    .from("guests")
+    .select("id")
+    .eq("hotel_id", hotelId)
+    .eq("channel", "telegram")
+    .eq("external_user_id", externalUserId)
+    .limit(1)
+    .maybeSingle();
+  if (createdGuestError) {
+    throw createdGuestError;
+  }
+  const createdGuestId = (createdGuestRow as { id: string } | null)?.id ?? null;
+  if (!createdGuestId) {
+    throw new Error("Expected PH1-04 smoke guest to exist after ingestion.");
+  }
+
+  const { data: createdConversationRow, error: createdConversationError } = await supabase
+    .from("conversations")
+    .select("id")
+    .eq("hotel_id", hotelId)
+    .eq("guest_id", createdGuestId)
+    .order("last_message_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (createdConversationError) {
+    throw createdConversationError;
+  }
+  const createdConversationId = (createdConversationRow as { id: string } | null)?.id ?? null;
+  if (!createdConversationId) {
+    throw new Error("Expected PH1-04 smoke conversation to exist after ingestion.");
+  }
+
   const { data: conversationRows, error: conversationsError } = await supabase
     .from("conversations")
     .select(
@@ -153,7 +185,11 @@ async function main() {
     throw new Error("Expected inbox conversation list to contain at least one conversation.");
   }
 
-  const selectedConversationId = resolveSelectedConversationId(conversations);
+  if (!conversations.some((conversation) => conversation.id === createdConversationId)) {
+    throw new Error("Expected the created PH1-04 conversation to appear in the inbox list.");
+  }
+
+  const selectedConversationId = resolveSelectedConversationId(conversations, createdConversationId);
   if (!selectedConversationId) {
     throw new Error("Expected selected conversation id to resolve from inbox list.");
   }

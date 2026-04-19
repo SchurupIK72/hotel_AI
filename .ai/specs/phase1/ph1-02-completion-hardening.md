@@ -3,14 +3,14 @@
 > **Created:** 2026-04-13
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** Draft
+> **Status:** Completed
 > **Depends on:** PH1-02 - Hotel Setup and Telegram Integration
 
 ---
 
 ## Summary
 
-This specification closes the remaining gaps that currently block PH1-02 from being marked complete.
+This specification closed the remaining gaps that blocked PH1-02 from being marked complete at the time it was created.
 
 The existing implementation already covers:
 
@@ -21,13 +21,13 @@ The existing implementation already covers:
 - runtime integration lookup contracts;
 - manual webhook URL derivation.
 
-However, PH1-02 should not be considered finished until the following risks are addressed:
+Those remaining risks were:
 
 1. the UI must not encourage live Telegram webhook activation before PH1-03 can safely consume inbound updates;
 2. internal `super_admin` must be able to inspect and operate Telegram integration settings, per the feature rules;
 3. the feature must have integration/security checks beyond helper-only smoke tests.
 
-This follow-up spec exists to close those gaps cleanly without changing PH1-02 scope.
+This follow-up spec existed to close those gaps cleanly without changing PH1-02 scope.
 
 ---
 
@@ -365,8 +365,8 @@ Closing these items now is cheaper and safer than discovering them while buildin
 
 ## Definition of Done
 
-PH1-02 may be marked complete after this hardening spec is implemented and verified, with:
+This hardening spec is complete now that:
 
 - all acceptance criteria in the parent spec still satisfied;
 - this hardening spec accepted;
-- `PH1-02` status updated from `In Progress` to `Complete`.
+- `PH1-02` status has been updated from `In Progress` to `Completed`.
