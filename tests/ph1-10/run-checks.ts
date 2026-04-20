@@ -5,6 +5,12 @@ import {
   compactAuditPayload,
   isPhase1AuditEventType,
 } from "../../lib/events/catalog.ts";
+import {
+  PHASE1_ACCEPTANCE_MATRIX,
+  formatPhase1ReleaseResult,
+  getPrimaryAutomationSource,
+  summarizePhase1ReleaseChecks,
+} from "../../lib/events/release-matrix.ts";
 
 try {
   for (const requiredEventType of [
@@ -48,6 +54,31 @@ try {
       conversationId: "conversation-1",
       operationKey: "operation-1",
     },
+  );
+
+  assert.equal(PHASE1_ACCEPTANCE_MATRIX.length >= 10, true);
+  assert.equal(PHASE1_ACCEPTANCE_MATRIX.some((entry) => entry.key === "tenant_safe_hotel_access"), true);
+  assert.equal(PHASE1_ACCEPTANCE_MATRIX.some((entry) => entry.key === "outbound_failure_handling"), true);
+  assert.equal(
+    getPrimaryAutomationSource(
+      PHASE1_ACCEPTANCE_MATRIX.find((entry) => entry.key === "human_approved_outbound_send")!,
+    )?.scriptName,
+    "verify:ph1-09",
+  );
+  assert.equal(
+    summarizePhase1ReleaseChecks([
+      { key: "one", criterion: "Criterion one", ownerSpec: "PH1-03", status: "pass", evidence: "ok" },
+      { key: "two", criterion: "Criterion two", ownerSpec: "PH1-10", status: "manual", evidence: "LOCAL_SETUP.md" },
+    ]).outcome,
+    "pass",
+  );
+  assert.equal(
+    formatPhase1ReleaseResult(
+      summarizePhase1ReleaseChecks([
+        { key: "broken", criterion: "Broken criterion", ownerSpec: "PH1-09", status: "fail", evidence: "verify:ph1-09 failed" },
+      ]),
+    ).includes("[fail] broken (PH1-09)"),
+    true,
   );
 
   console.log("PH1-10 helper checks passed.");
