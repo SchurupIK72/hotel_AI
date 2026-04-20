@@ -263,6 +263,18 @@ Run the PH1-08 live smoke verification against local Supabase:
 npm.cmd run verify:ph1-08
 ```
 
+Run the PH1-09 live smoke verification against local Supabase:
+
+```powershell
+npm.cmd run verify:ph1-09
+```
+
+Run the PH1-10 release acceptance orchestrator against local Supabase:
+
+```powershell
+npm.cmd run verify:ph1-10
+```
+
 ## PH1-04 Manual Workspace Smoke Check
 
 Once PH1-03 ingestion has created at least one conversation, you can verify the conversation workspace manually:
@@ -349,11 +361,48 @@ Once PH1-08 is wired, you can verify real draft generation and regenerate behavi
    - timeline still renders
    - inbox filters and conversation selection still behave normally
 
+## PH1-09 Manual Reply Smoke Check
+
+Once PH1-08 drafts are working and the local demo hotel has an active Telegram integration, you can verify the approved reply flow manually:
+
+1. Start the app with `npm.cmd run dev`
+2. Sign in at `http://localhost:3000/sign-in`
+3. Run `npm.cmd run verify:ph1-09`
+4. Open `http://localhost:3000/dashboard/inbox`
+5. Find the four PH1-09 smoke conversations and confirm:
+   - the supported informational conversation has a selected draft and a delivered outbound message linked to that draft
+   - the unsupported conversation allows a manual reply without pretending an AI draft existed
+   - the retryable failure conversation does not present the failed send as delivered
+   - the ambiguous failure conversation keeps the failure state visible for operator review
+6. Open the supported conversation and confirm the composer can still switch between draft-backed and manual editing safely
+7. Confirm the timeline and reply feedback stay tenant-scoped and do not expose raw Telegram tokens or provider secrets
+
+## PH1-10 Release Acceptance Flow
+
+Use this flow before merge to `main` or before a pilot handoff when you need Phase 1 evidence rather than an isolated demo.
+
+1. Start the local stack with `npm.cmd run supabase:start`
+2. Reset the database with `npm.cmd run supabase:reset` if your local schema or seed data may be stale
+3. Recreate the demo auth user and hotel membership with `npm.cmd run demo:bootstrap`
+4. Run the final release gate with `npm.cmd run verify:ph1-10`
+5. Treat any `[fail]` line in the output as a release blocker until the named acceptance item is understood and resolved
+6. Treat `[manual]` lines as residual operator checks that still require an explicit human sign-off
+
+Release-ready evidence for PH1-10 means:
+
+- `verify:ph1-10` ends with `Phase 1 release outcome: PASS`
+- the output names each acceptance item and its proof artifact
+- manual checks remain documented and consciously signed off rather than assumed complete
+- the final handoff notes include the branch or commit under review and the date of the local verification run
+
+If `demo:bootstrap` fails right after `supabase:reset`, wait for the local auth service to recover and rerun it. A clean `supabase:stop` then `supabase:start` cycle usually resolves this local-only startup issue.
+
 ## Important Notes
 
 - `supabase/seed.sql` is used for reproducible database seed data.
 - The demo auth user is created by `scripts/bootstrap-local-demo.mjs`, not directly by SQL, because that uses the supported Auth admin API instead of depending on internal `auth` table layout.
 - `docker-compose.yml` is only for the app container. Supabase local infrastructure is started by the CLI.
+- PH1-10 release handoff guidance lives in `.ai/specs/phase1/ph1-10-release-handoff-evidence.md`.
 - If you change `supabase/config.toml`, restart the stack:
 
 ```powershell
