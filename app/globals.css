@@ -395,6 +395,11 @@ textarea {
   margin: 0;
 }
 
+.draft-meta-stack {
+  display: grid;
+  gap: 4px;
+}
+
 .timeline-list {
   display: grid;
   gap: 14px;
@@ -430,6 +435,25 @@ textarea {
   border: 1px solid rgba(19, 34, 56, 0.08);
   border-radius: 16px;
   background: #f8fbff;
+}
+
+.draft-card-selected {
+  border-color: rgba(18, 59, 103, 0.28);
+  box-shadow: 0 12px 28px rgba(18, 59, 103, 0.12);
+}
+
+.draft-card-header,
+.reply-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reply-composer-textarea {
+  min-height: 168px;
+  resize: vertical;
 }
 
 .knowledge-layout {
@@ -525,6 +549,8 @@ textarea {
   .conversation-row-footer,
   .timeline-message-header,
   .inbox-pane-header,
+  .draft-card-header,
+  .reply-composer-actions,
   .knowledge-card-header,
   .knowledge-action-row {
     align-items: flex-start;

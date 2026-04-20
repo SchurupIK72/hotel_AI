@@ -232,7 +232,14 @@ async function verifyDashboardRedirect() {
       );
     }
   } catch (error) {
-    if (error instanceof Error && error.message.includes("ECONNREFUSED")) {
+    const causeCode =
+      error && typeof error === "object" && "cause" in error && error.cause && typeof error.cause === "object"
+        ? error.cause.code
+        : null;
+    if (
+      (error instanceof Error && error.message.includes("ECONNREFUSED")) ||
+      causeCode === "ECONNREFUSED"
+    ) {
       console.warn(
         "Skipped /dashboard redirect smoke check because the Next.js dev server is not running on http://127.0.0.1:3000.",
       );

@@ -69,7 +69,23 @@ export type TelegramWebhookEndpoint = {
   webhookSecretRequired: boolean;
 };
 
-function mapSummary(row: ChannelIntegrationRow): TelegramIntegrationSummary {
+export function createTelegramIntegrationSummary(
+  row: Pick<
+    ChannelIntegrationRow,
+    | "id"
+    | "hotel_id"
+    | "name"
+    | "bot_username"
+    | "webhook_path_token"
+    | "is_active"
+    | "last_verified_at"
+    | "last_error_at"
+    | "last_error_code"
+    | "last_error_message"
+    | "created_at"
+    | "updated_at"
+  >,
+): TelegramIntegrationSummary {
   return {
     integrationId: row.id,
     hotelId: row.hotel_id,
@@ -117,7 +133,7 @@ export async function listTelegramIntegrationsForHotel(hotelId: string) {
     throw error;
   }
 
-  return (data ?? []).map((row) => mapSummary(row as ChannelIntegrationRow));
+  return (data ?? []).map((row) => createTelegramIntegrationSummary(row as ChannelIntegrationRow));
 }
 
 export async function getActiveTelegramIntegration(hotelId: string) {
@@ -247,12 +263,12 @@ export async function createTelegramIntegration(input: {
     throw error;
   }
 
-  return mapSummary(data as ChannelIntegrationRow);
+  return createTelegramIntegrationSummary(data as ChannelIntegrationRow);
 }
 
 export async function saveTelegramIntegration(input: {
   hotelId: string;
-  hotelUserId: string;
+  hotelUserId?: string | null;
   name: string;
   botToken: string;
   webhookSecret?: string | null;
@@ -324,7 +340,7 @@ export async function saveTelegramIntegration(input: {
 
     return {
       ok: true,
-      integration: mapSummary(data as ChannelIntegrationRow),
+      integration: createTelegramIntegrationSummary(data as ChannelIntegrationRow),
       botUsername: verification.botUsername,
     } satisfies SaveTelegramIntegrationResult;
   }
@@ -356,7 +372,7 @@ export async function saveTelegramIntegration(input: {
 
   return {
     ok: true,
-    integration: mapSummary(data as ChannelIntegrationRow),
+    integration: createTelegramIntegrationSummary(data as ChannelIntegrationRow),
     botUsername: verification.botUsername,
   } satisfies SaveTelegramIntegrationResult;
 }

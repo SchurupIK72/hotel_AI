@@ -1,4 +1,5 @@
 import type { Database } from "@/types/database";
+import type { StoredConversationDraft } from "@/lib/copilot/models";
 
 type ConversationRow = Database["public"]["Tables"]["conversations"]["Row"];
 type GuestRow = Database["public"]["Tables"]["guests"]["Row"];
@@ -55,6 +56,7 @@ type MessageTimelineRow = Pick<
   | "direction"
   | "message_type"
   | "text_body"
+  | "delivery_status"
   | "created_at"
   | "delivered_at"
 >;
@@ -112,15 +114,45 @@ export type ConversationMessageTimelineItem = {
   direction: MessageRow["direction"];
   messageType: MessageRow["message_type"];
   textBody: string;
+  deliveryStatus: MessageRow["delivery_status"];
   createdAt: string;
   deliveredAt: string | null;
 };
 
+export const REPLY_SEND_STATES = ["idle", "sending", "sent", "failed_retryable", "failed_ambiguous"] as const;
+
+export type ReplySendState = (typeof REPLY_SEND_STATES)[number];
+
 export type ConversationDraftPanelState =
   | { state: "not_available_yet"; title: string; message: string }
   | { state: "empty"; title: string; message: string }
-  | { state: "ready"; title: string; drafts: Array<{ id: string; label: string; body: string }> }
+  | {
+      state: "ready";
+      title: string;
+      drafts: Array<{
+        id: string;
+        label: string;
+        body: string;
+        confidenceLabel: string | null;
+        createdAt: string;
+        modelName: string | null;
+        sourceType: StoredConversationDraft["sourceType"];
+        status: StoredConversationDraft["status"];
+      }>;
+    }
   | { state: "error"; title: string; message: string };
+
+export type ConversationReplyComposerState = {
+  conversationId: string;
+  selectedDraftId: string | null;
+  editorValue: string;
+  source: "manual" | "draft";
+  sendState: ReplySendState;
+  canSend: boolean;
+  errorMessage: string | null;
+  successMessage: string | null;
+  disabledReason: string | null;
+};
 
 export function isConversationStatus(value: string): value is ConversationStatus {
   return PHASE1_CONVERSATION_STATUSES.includes(value as ConversationStatus);
@@ -132,6 +164,14 @@ export function isInboxFilter(value: string): value is InboxFilter {
 
 export function resolveInboxFilter(value: string | null | undefined): InboxFilter {
   return value && isInboxFilter(value) ? value : "all";
+}
+
+export function isReplySendState(value: string): value is ReplySendState {
+  return REPLY_SEND_STATES.includes(value as ReplySendState);
+}
+
+export function resolveReplySendState(value: string | null | undefined): ReplySendState {
+  return value && isReplySendState(value) ? value : "idle";
 }
 
 export type ConversationWorkspaceDetail = {
@@ -214,21 +254,44 @@ export function createConversationMessageTimelineItem(message: MessageTimelineRo
     direction: message.direction,
     messageType: message.message_type,
     textBody: message.text_body,
+    deliveryStatus: message.delivery_status,
     createdAt: message.created_at,
     deliveredAt: message.delivered_at,
   } satisfies ConversationMessageTimelineItem;
+}
+
+export function isRenderableTimelineMessage(message: MessageTimelineRow) {
+  return message.direction === "inbound" || message.delivery_status == null || message.delivery_status === "sent";
 }
 
 export function createDraftPanelState(input?: {
   state?: "not_available_yet" | "empty";
   message?: string | null;
   errorMessage?: string | null;
+  drafts?: StoredConversationDraft[] | null;
 }) {
   if (input?.errorMessage) {
     return {
       state: "error",
       title: "Draft panel unavailable",
       message: input.errorMessage,
+    } satisfies ConversationDraftPanelState;
+  }
+
+  if (input?.drafts?.length) {
+    return {
+      state: "ready",
+      title: "Latest AI drafts",
+      drafts: input.drafts.map((draft) => ({
+        id: draft.id,
+        label: `Draft ${draft.draftIndex}`,
+        body: draft.draftText,
+        confidenceLabel: draft.confidenceLabel,
+        createdAt: draft.createdAt,
+        modelName: draft.modelName,
+        sourceType: draft.sourceType,
+        status: draft.status,
+      })),
     } satisfies ConversationDraftPanelState;
   }
 
@@ -272,7 +335,53 @@ export function createConversationWorkspaceDetail(input: {
       createdAt: input.conversation.created_at,
     },
     guest: createConversationGuestSummary(input.guest, input.conversation.guest_id),
-    messages: input.messages.map(createConversationMessageTimelineItem),
+    messages: input.messages.filter(isRenderableTimelineMessage).map(createConversationMessageTimelineItem),
     draftPanel: input.draftPanel ?? createDraftPanelState(),
   } satisfies ConversationWorkspaceDetail;
+}
+
+export function createConversationReplyComposerState(input: {
+  conversationId: string;
+  draftPanel: ConversationDraftPanelState;
+  selectedDraftId?: string | null;
+  replyText?: string | null;
+  sendState?: ReplySendState;
+  operationMessage?: string | null;
+  hasActiveTelegramIntegration: boolean;
+  hasResolvableTarget: boolean;
+}) {
+  const drafts = input.draftPanel.state === "ready" ? input.draftPanel.drafts : [];
+  const resolvedDraft =
+    drafts.find((draft) => draft.id === input.selectedDraftId) ??
+    drafts.find((draft) => draft.status === "selected") ??
+    null;
+  const editorValue =
+    input.replyText != null
+      ? input.replyText
+      : resolvedDraft
+        ? resolvedDraft.body
+        : "";
+  const sendState = input.sendState ?? "idle";
+  const selectedDraftId = resolvedDraft?.id ?? null;
+  const source = selectedDraftId ? "draft" : "manual";
+
+  let disabledReason: string | null = null;
+  if (!input.hasActiveTelegramIntegration) {
+    disabledReason = "Reply sending is unavailable until an active Telegram integration is configured.";
+  } else if (!input.hasResolvableTarget) {
+    disabledReason = "This conversation does not yet have a trusted Telegram target for replies.";
+  }
+
+  return {
+    conversationId: input.conversationId,
+    selectedDraftId,
+    editorValue,
+    source,
+    sendState,
+    canSend: disabledReason == null,
+    errorMessage:
+      sendState === "failed_retryable" || sendState === "failed_ambiguous" ? input.operationMessage ?? null : null,
+    successMessage: sendState === "sent" ? input.operationMessage ?? "Reply sent." : null,
+    disabledReason,
+  } satisfies ConversationReplyComposerState;
 }

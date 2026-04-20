@@ -3,7 +3,7 @@
 > **Created:** 2026-04-12
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** In Progress
+> **Status:** Completed
 > **Depends on:** PH1-01 - Tenant Foundation and Staff Access
 
 ---
@@ -448,23 +448,27 @@ This feature is complete only if:
 - [x] deactivate action for hotel admins
 - [x] stable webhook URL output and manual setup instructions added to the Telegram settings page
 - [x] reserved webhook route contract added at `/api/webhooks/telegram/[webhookPathToken]`
-- [ ] richer inactive-history review and operational webhook diagnostics
+
+Non-blocking follow-up ideas:
+
+- richer inactive-history review and operational webhook diagnostics
 
 ## Verification Commands
 
 Run these checks locally after migrations are applied:
 
 ```bash
-npm run typecheck
-npm run test:ph1-02
-npm run supabase:reset
+npm.cmd run typecheck
+npm.cmd run test:ph1-02
+npm.cmd run verify:ph1-02
 ```
 
 ## Follow-up Completion Spec
 
-Remaining completion blockers are captured in:
+Completion follow-up work was captured and is now closed in:
 
 - [ph1-02-completion-hardening.md](/c:/REPO/hotelAI/.ai/specs/phase1/ph1-02-completion-hardening.md)
+- [phase1-audit-remediation-2026-04-18.md](/c:/REPO/hotelAI/.ai/specs/phase1/phase1-audit-remediation-2026-04-18.md)
 
 ---
 

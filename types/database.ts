@@ -237,6 +237,9 @@ export type Database = {
           sender_external_id: string | null;
           text_body: string;
           source_draft_id: string | null;
+          sent_by_hotel_user_id: string | null;
+          delivery_status: "sending" | "sent" | "failed_retryable" | "failed_ambiguous" | null;
+          send_operation_key: string | null;
           delivered_at: string | null;
           raw_payload: Json | null;
           created_at: string;
@@ -254,6 +257,9 @@ export type Database = {
           sender_external_id?: string | null;
           text_body: string;
           source_draft_id?: string | null;
+          sent_by_hotel_user_id?: string | null;
+          delivery_status?: "sending" | "sent" | "failed_retryable" | "failed_ambiguous" | null;
+          send_operation_key?: string | null;
           delivered_at?: string | null;
           raw_payload?: Json | null;
           created_at?: string;
@@ -271,6 +277,9 @@ export type Database = {
           sender_external_id?: string | null;
           text_body?: string;
           source_draft_id?: string | null;
+          sent_by_hotel_user_id?: string | null;
+          delivery_status?: "sending" | "sent" | "failed_retryable" | "failed_ambiguous" | null;
+          send_operation_key?: string | null;
           delivered_at?: string | null;
           raw_payload?: Json | null;
           created_at?: string;
@@ -305,6 +314,53 @@ export type Database = {
           entity_type?: string | null;
           entity_id?: string | null;
           payload?: Json;
+          created_at?: string;
+        };
+      };
+      ai_drafts: {
+        Row: {
+          id: string;
+          generation_id: string;
+          hotel_id: string;
+          conversation_id: string;
+          message_id: string;
+          draft_index: number;
+          draft_text: string;
+          source_type: "kb" | "fallback" | "manual_trigger";
+          status: "generated" | "selected" | "sent" | "discarded";
+          retrieval_refs: Json | null;
+          model_name: string | null;
+          confidence_label: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          generation_id?: string;
+          hotel_id: string;
+          conversation_id: string;
+          message_id: string;
+          draft_index: number;
+          draft_text: string;
+          source_type: "kb" | "fallback" | "manual_trigger";
+          status?: "generated" | "selected" | "sent" | "discarded";
+          retrieval_refs?: Json | null;
+          model_name?: string | null;
+          confidence_label?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          generation_id?: string;
+          hotel_id?: string;
+          conversation_id?: string;
+          message_id?: string;
+          draft_index?: number;
+          draft_text?: string;
+          source_type?: "kb" | "fallback" | "manual_trigger";
+          status?: "generated" | "selected" | "sent" | "discarded";
+          retrieval_refs?: Json | null;
+          model_name?: string | null;
+          confidence_label?: string | null;
           created_at?: string;
         };
       };

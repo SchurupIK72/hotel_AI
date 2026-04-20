@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { listLatestConversationDraftsWithClient } from "@/lib/copilot/store";
 import type { Database } from "@/types/database";
 import {
   createConversationWorkspaceDetail,
@@ -64,6 +65,7 @@ type MessageTimelineRow = Pick<
   | "direction"
   | "message_type"
   | "text_body"
+  | "delivery_status"
   | "created_at"
   | "delivered_at"
 >;
@@ -156,7 +158,7 @@ export async function listConversationMessagesWithClient(
 ) {
   const { data, error } = await supabase
     .from("messages")
-    .select("id, conversation_id, guest_id, direction, message_type, text_body, created_at, delivered_at")
+    .select("id, conversation_id, guest_id, direction, message_type, text_body, delivery_status, created_at, delivered_at")
     .eq("hotel_id", hotelId)
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
@@ -197,14 +199,24 @@ export async function getConversationWorkspaceWithClient(
     return null;
   }
 
-  const guestMap = await getGuestsByIds(supabase, hotelId, [conversation.guest_id]);
-  const messages = await listConversationMessagesWithClient(supabase, hotelId, conversationId);
+  const [guestMap, messages, draftsResult] = await Promise.all([
+    getGuestsByIds(supabase, hotelId, [conversation.guest_id]),
+    listConversationMessagesWithClient(supabase, hotelId, conversationId),
+    listLatestConversationDraftsWithClient(supabase, hotelId, conversationId)
+      .then((drafts) => ({ ok: true as const, drafts }))
+      .catch((error) => ({
+        ok: false as const,
+        message: error instanceof Error ? error.message : "Drafts could not be loaded.",
+      })),
+  ]);
 
   return createConversationWorkspaceDetail({
     conversation,
     guest: guestMap.get(conversation.guest_id) ?? null,
     messages,
-    draftPanel: createDraftPanelState(),
+    draftPanel: draftsResult.ok
+      ? createDraftPanelState({ state: "empty", drafts: draftsResult.drafts })
+      : createDraftPanelState({ errorMessage: draftsResult.message }),
   });
 }
 

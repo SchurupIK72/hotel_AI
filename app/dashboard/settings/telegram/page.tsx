@@ -1,23 +1,41 @@
 import { deactivateTelegramIntegrationAction } from "@/app/dashboard/settings/telegram/actions";
 import { TelegramIntegrationForm } from "@/components/settings/telegram-integration-form";
-import { requireHotelAdmin } from "@/lib/auth/guards";
+import { requireTelegramSettingsAccess } from "@/lib/auth/guards";
 import { getTelegramWebhookEndpoint, listTelegramIntegrationsForHotel } from "@/lib/telegram/integrations";
 
 type TelegramSettingsPageProps = {
   searchParams?: Promise<{
+    hotelId?: string;
     status?: string;
     message?: string;
   }>;
 };
 
 export default async function TelegramSettingsPage({ searchParams }: TelegramSettingsPageProps) {
-  const access = await requireHotelAdmin();
+  const params = (await searchParams) ?? {};
+  const access = await requireTelegramSettingsAccess(params.hotelId ?? null);
+  const flashMessage = params.message ?? null;
+
+  if (access.actorKind === "super_admin_missing_hotel") {
+    return (
+      <section className="stack">
+        <div>
+          <p className="eyebrow">PH1-02</p>
+          <h1 className="title">Telegram integration support</h1>
+          <p className="body-copy">
+            Internal support access requires an explicit hotel scope. Open this page with
+            <span className="mono"> ?hotelId=&lt;uuid&gt;</span> to inspect or repair one hotel's Telegram setup.
+          </p>
+        </div>
+        {params.status === "error" && flashMessage ? <p className="error-text">{flashMessage}</p> : null}
+      </section>
+    );
+  }
+
   const integrations = await listTelegramIntegrationsForHotel(access.hotelId);
   const activeIntegration = integrations.find((integration) => integration.isActive) ?? null;
   const latestIntegration = integrations[0] ?? null;
   const webhookEndpoint = await getTelegramWebhookEndpoint(access.hotelId);
-  const params = (await searchParams) ?? {};
-  const flashMessage = params.message ?? null;
 
   return (
     <section className="stack">
@@ -29,6 +47,15 @@ export default async function TelegramSettingsPage({ searchParams }: TelegramSet
           This page shows non-secret integration metadata for the active hotel.
         </p>
       </div>
+      {access.actorKind === "super_admin" ? (
+        <article className="meta-card">
+          <h2>Internal support mode</h2>
+          <p className="body-copy">
+            You are managing Telegram settings for <span className="mono">{access.hotelName ?? access.hotelId}</span>
+            {" "}as an internal super admin.
+          </p>
+        </article>
+      ) : null}
       {params.status === "saved" && flashMessage ? (
         <p className="success-text">{flashMessage}</p>
       ) : null}
@@ -103,12 +130,17 @@ export default async function TelegramSettingsPage({ searchParams }: TelegramSet
       ) : null}
       {activeIntegration ? (
         <form action={deactivateTelegramIntegrationAction}>
+          <input name="hotelId" type="hidden" value={access.actorKind === "super_admin" ? access.hotelId : ""} />
           <button className="button secondary-button" type="submit">
             Deactivate integration
           </button>
         </form>
       ) : null}
-      <TelegramIntegrationForm activeIntegration={activeIntegration} />
+      <TelegramIntegrationForm
+        activeIntegration={activeIntegration}
+        hotelId={access.actorKind === "super_admin" ? access.hotelId : null}
+        supportMode={access.actorKind === "super_admin"}
+      />
     </section>
   );
 }

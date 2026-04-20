@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { AuthenticationRequiredError, AuthorizationError } from "@/lib/auth/errors";
+import type { TelegramSettingsAccess } from "@/lib/auth/telegram-settings-access";
 import type { HotelUserAccessContext, SuperAdminAccessContext } from "@/lib/auth/types";
-import { getAccessContext } from "@/lib/auth/server";
+import { getAccessContext, resolveTelegramSettingsAccess } from "@/lib/auth/server";
 
 function handleGuardFailure(error: unknown): never {
   if (error instanceof AuthenticationRequiredError) {
@@ -53,3 +54,12 @@ export async function requireSuperAdmin(): Promise<SuperAdminAccessContext> {
   }
 }
 
+export async function requireTelegramSettingsAccess(
+  requestedHotelId?: string | null,
+): Promise<TelegramSettingsAccess> {
+  try {
+    return await resolveTelegramSettingsAccess(requestedHotelId);
+  } catch (error) {
+    handleGuardFailure(error);
+  }
+}

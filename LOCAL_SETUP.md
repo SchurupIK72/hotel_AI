@@ -257,6 +257,12 @@ Run the PH1-07 live smoke verification against local Supabase:
 npm.cmd run verify:ph1-07
 ```
 
+Run the PH1-08 live smoke verification against local Supabase:
+
+```powershell
+npm.cmd run verify:ph1-08
+```
+
 ## PH1-04 Manual Workspace Smoke Check
 
 Once PH1-03 ingestion has created at least one conversation, you can verify the conversation workspace manually:
@@ -323,6 +329,25 @@ Once PH1-06 knowledge items exist for the demo hotel, you can verify PH1-07 retr
    - draft-only knowledge is ignored by retrieval
    - no-evidence queries return clarification or escalation mode instead of confident evidence
    - retrieval emits `kb_retrieval_requested` and `kb_retrieval_completed` with compact evidence summaries
+
+## PH1-08 Manual Draft Smoke Check
+
+Once PH1-08 is wired, you can verify real draft generation and regenerate behavior manually:
+
+1. Start the app with `npm.cmd run dev`
+2. Sign in at `http://localhost:3000/sign-in`
+3. Run `npm.cmd run verify:ph1-08`
+4. Open `http://localhost:3000/dashboard/inbox`
+5. Find the three smoke conversations created by the script and confirm:
+   - the supported informational conversation shows ready drafts with `knowledge-backed` confidence
+   - the fallback informational conversation shows cautious drafts rather than invented operational facts
+   - the unsupported refund or booking conversation keeps a safe empty draft panel state
+6. Open the supported conversation and click `Refresh drafts`
+7. Confirm the saved banner appears and the draft panel still shows a ready state with fresh metadata
+8. Confirm the rest of the workspace remains usable:
+   - guest summary still renders
+   - timeline still renders
+   - inbox filters and conversation selection still behave normally
 
 ## Important Notes
 

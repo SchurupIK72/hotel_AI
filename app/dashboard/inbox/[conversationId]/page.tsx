@@ -1,7 +1,13 @@
+import { randomUUID } from "node:crypto";
 import { InboxWorkspace } from "@/components/inbox/workspace";
 import { notFound } from "next/navigation";
-import { resolveInboxFilter } from "@/lib/conversations/models";
+import {
+  createConversationReplyComposerState,
+  resolveInboxFilter,
+  resolveReplySendState,
+} from "@/lib/conversations/models";
 import { clearConversationUnread, listAssignableHotelUsers } from "@/lib/conversations/operations";
+import { getConversationReplySupport } from "@/lib/conversations/replies";
 import { getConversationWorkspace, listInboxConversations } from "@/lib/conversations/workspace";
 import { requireHotelUser } from "@/lib/auth/guards";
 
@@ -13,6 +19,9 @@ type ConversationWorkspacePageProps = {
     filter?: string;
     operationStatus?: string;
     message?: string;
+    draftId?: string;
+    replyText?: string;
+    sendState?: string;
   }>;
 };
 
@@ -42,13 +51,25 @@ export default async function ConversationWorkspacePage({
     notFound();
   }
 
+  const replySupport = await getConversationReplySupport(access.hotelId, conversationId);
+  const composerState = createConversationReplyComposerState({
+    conversationId: selectedConversation.conversation.id,
+    draftPanel: selectedConversation.draftPanel,
+    selectedDraftId: resolvedSearchParams?.draftId ?? null,
+    replyText: resolvedSearchParams?.replyText ?? null,
+    sendState: resolveReplySendState(resolvedSearchParams?.sendState),
+    operationMessage: resolvedSearchParams?.message ?? null,
+    hasActiveTelegramIntegration: replySupport.hasActiveTelegramIntegration,
+    hasResolvableTarget: replySupport.hasResolvableTarget,
+  });
+
   return (
     <section className="stack">
       <div>
-        <p className="eyebrow">PH1-04</p>
-        <h1 className="title">Conversation workspace</h1>
+        <p className="eyebrow">PH1-09</p>
+        <h1 className="title">Conversation reply workspace</h1>
         <p className="body-copy">
-          Review tenant-scoped guest history, normalized conversation metadata, and the reserved draft panel from one screen.
+          Review tenant-scoped guest history, edit the final reply text, and send a human-approved outbound message without leaving the conversation screen.
         </p>
       </div>
       <InboxWorkspace
@@ -56,6 +77,8 @@ export default async function ConversationWorkspacePage({
         conversations={conversations}
         currentFilter={currentFilter}
         currentHotelUserId={access.hotelUserId}
+        replyComposerOperationKey={randomUUID()}
+        replyComposerState={composerState}
         operationMessage={resolvedSearchParams?.message ?? null}
         operationStatus={
           resolvedSearchParams?.operationStatus === "error"
