@@ -191,9 +191,15 @@ async function listConversationEvents(hotelId: string, entityId: string) {
   if (error) throw error;
   return (data ?? []) as Array<{ event_type: string; payload: Record<string, unknown> }>;
 }
-async function withStubbedFetch<T>(handler: typeof fetch, callback: () => Promise<T>) {
+async function withStubbedTelegramFetch<T>(handler: typeof fetch, callback: () => Promise<T>) {
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = handler;
+  globalThis.fetch = (async (input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+    if (url.startsWith("https://api.telegram.org/")) {
+      return handler(input, init);
+    }
+    return originalFetch(input, init);
+  }) as typeof fetch;
   try {
     return await callback();
   } finally {
@@ -226,23 +232,23 @@ async function main() {
   assert.notEqual(supported.latestDraftId, null);
   assert.equal(unsupported.latestDraftId, null);
   await selectConversationDraft({ hotelId, conversationId: supported.conversationId, draftId: supported.latestDraftId as string, actorHotelUserId });
-  await withStubbedFetch(async () => new Response(JSON.stringify({ ok: true, result: { message_id: 9901 } }), { status: 200 }), async () => {
+  await withStubbedTelegramFetch(async () => new Response(JSON.stringify({ ok: true, result: { message_id: 9901 } }), { status: 200 }), async () => {
     const result = await sendConversationReply({ hotelId, conversationId: supported.conversationId, replyText: "Breakfast is served from 07:00 to 10:30.", selectedDraftId: supported.latestDraftId, actorHotelUserId, operationKey: crypto.randomUUID() });
     assert.equal(result.outcome, "sent");
   });
 
-  await withStubbedFetch(async () => new Response(JSON.stringify({ ok: true, result: { message_id: 9902 } }), { status: 200 }), async () => {
+  await withStubbedTelegramFetch(async () => new Response(JSON.stringify({ ok: true, result: { message_id: 9902 } }), { status: 200 }), async () => {
     const result = await sendConversationReply({ hotelId, conversationId: unsupported.conversationId, replyText: "Please contact the front desk so we can review your booking request manually.", selectedDraftId: null, actorHotelUserId, operationKey: crypto.randomUUID() });
     assert.equal(result.outcome, "sent");
   });
 
-  await withStubbedFetch(async () => new Response(JSON.stringify({ ok: false, description: "Bad Request: chat not found" }), { status: 400 }), async () => {
+  await withStubbedTelegramFetch(async () => new Response(JSON.stringify({ ok: false, description: "Bad Request: chat not found" }), { status: 400 }), async () => {
     const result = await sendConversationReply({ hotelId, conversationId: retryable.conversationId, replyText: "Breakfast is served from 07:00 to 10:30.", selectedDraftId: retryable.latestDraftId, actorHotelUserId, operationKey: crypto.randomUUID() });
     assert.deepEqual(result.outcome, "failed");
     assert.equal(result.failureType, "retryable");
   });
 
-  await withStubbedFetch(async () => {
+  await withStubbedTelegramFetch(async () => {
     throw new Error("socket hang up");
   }, async () => {
     const result = await sendConversationReply({ hotelId, conversationId: ambiguous.conversationId, replyText: "Breakfast is served from 07:00 to 10:30.", selectedDraftId: ambiguous.latestDraftId, actorHotelUserId, operationKey: crypto.randomUUID() });
