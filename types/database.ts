@@ -237,6 +237,9 @@ export type Database = {
           sender_external_id: string | null;
           text_body: string;
           source_draft_id: string | null;
+          sent_by_hotel_user_id: string | null;
+          delivery_status: "sending" | "sent" | "failed_retryable" | "failed_ambiguous" | null;
+          send_operation_key: string | null;
           delivered_at: string | null;
           raw_payload: Json | null;
           created_at: string;
@@ -254,6 +257,9 @@ export type Database = {
           sender_external_id?: string | null;
           text_body: string;
           source_draft_id?: string | null;
+          sent_by_hotel_user_id?: string | null;
+          delivery_status?: "sending" | "sent" | "failed_retryable" | "failed_ambiguous" | null;
+          send_operation_key?: string | null;
           delivered_at?: string | null;
           raw_payload?: Json | null;
           created_at?: string;
@@ -271,6 +277,9 @@ export type Database = {
           sender_external_id?: string | null;
           text_body?: string;
           source_draft_id?: string | null;
+          sent_by_hotel_user_id?: string | null;
+          delivery_status?: "sending" | "sent" | "failed_retryable" | "failed_ambiguous" | null;
+          send_operation_key?: string | null;
           delivered_at?: string | null;
           raw_payload?: Json | null;
           created_at?: string;

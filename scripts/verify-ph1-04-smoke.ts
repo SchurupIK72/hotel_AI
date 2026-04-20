@@ -226,7 +226,7 @@ async function main() {
 
   const { data: messageRows, error: messageError } = await supabase
     .from("messages")
-    .select("id, conversation_id, guest_id, direction, message_type, text_body, created_at, delivered_at")
+    .select("id, conversation_id, guest_id, direction, message_type, text_body, delivery_status, created_at, delivered_at")
     .eq("hotel_id", hotelId)
     .eq("conversation_id", selectedConversationId)
     .order("created_at", { ascending: true });
@@ -246,6 +246,7 @@ async function main() {
             direction: "inbound" | "outbound";
             message_type: "text";
             text_body: string;
+            delivery_status: "sending" | "sent" | "failed_retryable" | "failed_ambiguous" | null;
             created_at: string;
             delivered_at: string | null;
           }>,

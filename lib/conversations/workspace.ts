@@ -65,6 +65,7 @@ type MessageTimelineRow = Pick<
   | "direction"
   | "message_type"
   | "text_body"
+  | "delivery_status"
   | "created_at"
   | "delivered_at"
 >;
@@ -157,7 +158,7 @@ export async function listConversationMessagesWithClient(
 ) {
   const { data, error } = await supabase
     .from("messages")
-    .select("id, conversation_id, guest_id, direction, message_type, text_body, created_at, delivered_at")
+    .select("id, conversation_id, guest_id, direction, message_type, text_body, delivery_status, created_at, delivered_at")
     .eq("hotel_id", hotelId)
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });

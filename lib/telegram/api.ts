@@ -1,4 +1,5 @@
 import type { TelegramClientConfig } from "./integrations.ts";
+import { TelegramSendMessageError } from "./errors.ts";
 
 const TELEGRAM_API_BASE_URL = "https://api.telegram.org";
 const TELEGRAM_TOKEN_PATTERN = /\b\d{6,}:[A-Za-z0-9_-]{20,}\b/g;
@@ -80,26 +81,64 @@ export async function sendTelegramTextMessage(
   config: TelegramClientConfig,
   input: { chatId: string | number; text: string },
 ) {
-  const response = await fetch(buildTelegramApiUrl(config.botToken, "sendMessage"), {
-    method: "POST",
-    cache: "no-store",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      chat_id: input.chatId,
-      text: input.text,
-    }),
-  });
+  let response: Response;
 
-  const payload = (await response.json()) as TelegramSendMessageResponse;
-  if (!response.ok || !payload.ok) {
-    throw new Error(
-      sanitizeTelegramErrorMessage(payload.description ?? "Telegram sendMessage request failed."),
+  try {
+    response = await fetch(buildTelegramApiUrl(config.botToken, "sendMessage"), {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chat_id: input.chatId,
+        text: input.text,
+      }),
+    });
+  } catch {
+    throw new TelegramSendMessageError(
+      "ambiguous",
+      "Telegram delivery outcome could not be confirmed.",
+    );
+  }
+
+  let payloadText = "";
+  try {
+    payloadText = await response.text();
+  } catch {
+    throw new TelegramSendMessageError(
+      "ambiguous",
+      "Telegram delivery outcome could not be confirmed.",
+    );
+  }
+
+  let payload: TelegramSendMessageResponse | null = null;
+  if (payloadText.trim()) {
+    try {
+      payload = JSON.parse(payloadText) as TelegramSendMessageResponse;
+    } catch {
+      throw new TelegramSendMessageError(
+        "ambiguous",
+        "Telegram delivery outcome could not be confirmed.",
+      );
+    }
+  }
+
+  if (!response.ok || !payload?.ok) {
+    throw new TelegramSendMessageError(
+      "rejected",
+      sanitizeTelegramErrorMessage(payload?.description ?? "Telegram sendMessage request failed."),
+    );
+  }
+
+  if (payload.result?.message_id == null) {
+    throw new TelegramSendMessageError(
+      "ambiguous",
+      "Telegram delivery outcome could not be confirmed.",
     );
   }
 
   return {
-    telegramMessageId: payload.result?.message_id ?? null,
+    telegramMessageId: payload.result.message_id,
   };
 }

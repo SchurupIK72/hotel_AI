@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  createConversationReplyComposerState,
   createConversationWorkspaceDetail,
   createDraftPanelState,
   createInboxConversationListItem,
@@ -86,6 +87,7 @@ try {
           createdAt: "2026-04-18T09:00:00.000Z",
           modelName: "gpt-phase1",
           sourceType: "kb",
+          status: "generated",
         },
       ],
     },
@@ -130,6 +132,7 @@ try {
         direction: "inbound",
         message_type: "text",
         text_body: "Hello",
+        delivery_status: null,
         created_at: "2026-04-17T08:01:00.000Z",
         delivered_at: "2026-04-17T08:01:00.000Z",
       },
@@ -140,8 +143,20 @@ try {
         direction: "outbound",
         message_type: "text",
         text_body: "Hi there",
+        delivery_status: "sent",
         created_at: "2026-04-17T08:02:00.000Z",
         delivered_at: "2026-04-17T08:02:00.000Z",
+      },
+      {
+        id: "message-3",
+        conversation_id: "conversation-1",
+        guest_id: null,
+        direction: "outbound",
+        message_type: "text",
+        text_body: "Retry later",
+        delivery_status: "failed_retryable",
+        created_at: "2026-04-17T08:03:00.000Z",
+        delivered_at: null,
       },
     ],
   });
@@ -152,6 +167,36 @@ try {
     detail.messages.map((message) => message.id),
     ["message-1", "message-2"],
   );
+  assert.equal(detail.messages[1]?.deliveryStatus, "sent");
+
+  const composerState = createConversationReplyComposerState({
+    conversationId: "conversation-1",
+    draftPanel: createDraftPanelState({
+      drafts: [
+        {
+          id: "draft-1",
+          generationId: "generation-1",
+          hotelId: "hotel-1",
+          conversationId: "conversation-1",
+          messageId: "message-1",
+          draftIndex: 1,
+          draftText: "Breakfast is served from 07:00 to 10:30.",
+          sourceType: "kb",
+          status: "selected",
+          retrievalRefs: [],
+          modelName: "gpt-phase1",
+          confidenceLabel: "knowledge-backed",
+          createdAt: "2026-04-18T09:00:00.000Z",
+        },
+      ],
+    }),
+    hasActiveTelegramIntegration: true,
+    hasResolvableTarget: true,
+  });
+  assert.equal(composerState.selectedDraftId, "draft-1");
+  assert.equal(composerState.editorValue, "Breakfast is served from 07:00 to 10:30.");
+  assert.equal(composerState.source, "draft");
+  assert.equal(composerState.canSend, true);
 
   console.log("PH1-04 helper checks passed.");
 } catch (error) {

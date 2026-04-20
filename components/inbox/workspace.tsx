@@ -2,10 +2,14 @@ import Link from "next/link";
 import type { AssignableHotelUser } from "@/lib/db/hotel-users";
 import {
   assignConversationAction,
+  clearConversationDraftSelectionAction,
   regenerateConversationDraftsAction,
+  selectConversationDraftAction,
+  sendConversationReplyAction,
   updateConversationStatusAction,
 } from "@/app/dashboard/inbox/actions";
 import type {
+  ConversationReplyComposerState,
   ConversationDraftPanelState,
   ConversationStatus,
   ConversationWorkspaceDetail,
@@ -20,6 +24,8 @@ type InboxWorkspaceProps = {
   currentHotelUserId: string;
   operationMessage?: string | null;
   operationStatus?: "saved" | "error" | null;
+  replyComposerOperationKey?: string | null;
+  replyComposerState?: ConversationReplyComposerState | null;
   selectedConversationId?: string | null;
   selectedConversation: ConversationWorkspaceDetail | null;
   missingConversation?: boolean;
@@ -82,7 +88,12 @@ function getAssignableHotelUserLabel(user: AssignableHotelUser) {
   return user.full_name?.trim() || `${user.role.replaceAll("_", " ")} (${user.id.slice(0, 8)})`;
 }
 
-function renderDraftPanel(panel: ConversationDraftPanelState, conversationId: string | null, currentFilter: InboxFilter) {
+function renderDraftPanel(
+  panel: ConversationDraftPanelState,
+  conversationId: string | null,
+  currentFilter: InboxFilter,
+  composerState: ConversationReplyComposerState | null,
+) {
   const actionLabel = panel.state === "ready" ? "Refresh drafts" : "Generate drafts";
   const actionForm = conversationId ? (
     <form action={regenerateConversationDraftsAction}>
@@ -102,17 +113,37 @@ function renderDraftPanel(panel: ConversationDraftPanelState, conversationId: st
           <h2 className="section-title">{panel.title}</h2>
         </div>
         {panel.drafts.map((draft) => (
-          <section className="draft-card stack" key={draft.id}>
-            <strong>
-              {draft.label}
-              {draft.confidenceLabel ? ` - ${draft.confidenceLabel}` : ""}
-            </strong>
+          <section
+            className={`draft-card stack${composerState?.selectedDraftId === draft.id ? " draft-card-selected" : ""}`}
+            key={draft.id}
+          >
+            <div className="draft-card-header">
+              <strong>
+                {draft.label}
+                {draft.confidenceLabel ? ` - ${draft.confidenceLabel}` : ""}
+              </strong>
+              <span className="conversation-pill">{formatStatusLabel(draft.status)}</span>
+            </div>
             <p className="body-copy">{draft.body}</p>
             <div className="draft-meta-stack">
               <p className="conversation-meta mono">Source: {draft.sourceType}</p>
               <p className="conversation-meta mono">Created: {formatDateTime(draft.createdAt)}</p>
               {draft.modelName ? <p className="conversation-meta mono">Model: {draft.modelName}</p> : null}
             </div>
+            {conversationId ? (
+              <form action={selectConversationDraftAction}>
+                <input name="conversationId" type="hidden" value={conversationId} />
+                <input name="draftId" type="hidden" value={draft.id} />
+                <input name="filter" type="hidden" value={currentFilter} />
+                <button
+                  className="button secondary-button"
+                  disabled={draft.status === "sent" || composerState?.selectedDraftId === draft.id}
+                  type="submit"
+                >
+                  {composerState?.selectedDraftId === draft.id ? "Draft selected" : "Use draft"}
+                </button>
+              </form>
+            ) : null}
           </section>
         ))}
         {actionForm}
@@ -128,6 +159,78 @@ function renderDraftPanel(panel: ConversationDraftPanelState, conversationId: st
       </div>
       <p className="body-copy">{panel.message}</p>
       {actionForm}
+    </article>
+  );
+}
+
+function renderReplyComposer(
+  selectedConversation: ConversationWorkspaceDetail | null,
+  composerState: ConversationReplyComposerState | null,
+  operationKey: string | null | undefined,
+  currentFilter: InboxFilter,
+) {
+  if (!selectedConversation || !composerState || !operationKey) {
+    return (
+      <article className="meta-card stack">
+        <div>
+          <p className="eyebrow">Reply composer</p>
+          <h2 className="section-title">Select a conversation to compose a reply</h2>
+        </div>
+        <p className="body-copy">
+          Once a conversation is open, you will be able to review a draft, edit the final reply text, or write a manual response.
+        </p>
+      </article>
+    );
+  }
+
+  const sendDisabled = !composerState.canSend;
+
+  return (
+    <article className="meta-card stack">
+      <div>
+        <p className="eyebrow">Reply composer</p>
+        <h2 className="section-title">Human-approved outbound reply</h2>
+      </div>
+      <p className="body-copy">
+        {composerState.source === "draft"
+          ? "The selected draft is only a starting point. Edit the final text before sending."
+          : "Write the final plain-text reply that will be sent to the guest through Telegram."}
+      </p>
+      {composerState.successMessage ? <p className="success-text">{composerState.successMessage}</p> : null}
+      {composerState.errorMessage ? <p className="error-text">{composerState.errorMessage}</p> : null}
+      {composerState.disabledReason ? <p className="body-copy">{composerState.disabledReason}</p> : null}
+      <form action={sendConversationReplyAction} className="control-form">
+        <input name="conversationId" type="hidden" value={selectedConversation.conversation.id} />
+        <input name="filter" type="hidden" value={currentFilter} />
+        <input name="selectedDraftId" type="hidden" value={composerState.selectedDraftId ?? ""} />
+        <input name="operationKey" type="hidden" value={operationKey} />
+        <label className="label-stack">
+          <span>Final reply text</span>
+          <textarea
+            className="input reply-composer-textarea"
+            defaultValue={composerState.editorValue}
+            name="replyText"
+            required
+            rows={8}
+          />
+        </label>
+        <div className="draft-meta-stack">
+          <p className="conversation-meta mono">
+            Source: {composerState.source === "draft" ? `Draft-backed (${composerState.selectedDraftId})` : "Manual reply"}
+          </p>
+          <p className="conversation-meta mono">Channel: Telegram text only</p>
+        </div>
+        <div className="reply-composer-actions">
+          {composerState.selectedDraftId ? (
+            <button className="button secondary-button" formAction={clearConversationDraftSelectionAction}>
+              Write manually
+            </button>
+          ) : null}
+          <button className="button" disabled={sendDisabled} type="submit">
+            Send reply
+          </button>
+        </div>
+      </form>
     </article>
   );
 }
@@ -189,6 +292,8 @@ export function InboxWorkspace({
   currentHotelUserId,
   operationMessage,
   operationStatus,
+  replyComposerOperationKey,
+  replyComposerState,
   selectedConversationId,
   selectedConversation,
   missingConversation = false,
@@ -422,7 +527,13 @@ export function InboxWorkspace({
                 </p>
               </div>
             </article>
-            {renderDraftPanel(draftPanel, selectedConversation.conversation.id, currentFilter)}
+            {renderReplyComposer(
+              selectedConversation,
+              replyComposerState ?? null,
+              replyComposerOperationKey,
+              currentFilter,
+            )}
+            {renderDraftPanel(draftPanel, selectedConversation.conversation.id, currentFilter, replyComposerState ?? null)}
           </div>
         ) : (
           <div className="stack">
@@ -435,7 +546,8 @@ export function InboxWorkspace({
                 Open a conversation to inspect the normalized guest profile created by PH1-03.
               </p>
             </article>
-            {renderDraftPanel(draftPanel, null, currentFilter)}
+            {renderReplyComposer(null, null, null, currentFilter)}
+            {renderDraftPanel(draftPanel, null, currentFilter, null)}
           </div>
         )}
       </aside>

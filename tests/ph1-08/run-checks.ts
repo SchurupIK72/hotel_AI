@@ -73,6 +73,7 @@ try {
   assert.equal(readyPanel.drafts[0]?.confidenceLabel, "knowledge-backed");
   assert.equal(readyPanel.drafts[0]?.createdAt, "2026-04-18T09:01:00.000Z");
   assert.equal(readyPanel.drafts[0]?.modelName, "gpt-phase1");
+  assert.equal(readyPanel.drafts[0]?.status, "generated");
   assert.equal(readyPanel.drafts[1]?.sourceType, "kb");
 
   const knowledgeResult = createDraftVariantsFromContext("What time is breakfast served?", "auto_on_inbound", {
