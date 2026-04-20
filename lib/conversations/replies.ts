@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceRoleSupabaseClient } from "../supabase/admin.ts";
 import { listLatestConversationDraftsWithClient } from "../copilot/store.ts";
 import { createEventLogSafely } from "../events/event-logs.ts";
+import { compactAuditPayload } from "../events/catalog.ts";
 import { sendTelegramTextMessage } from "../telegram/api.ts";
 import { getActiveTelegramIntegration, getTelegramClientConfig } from "../telegram/integrations.ts";
 import {
@@ -536,10 +537,11 @@ export async function selectConversationDraftWithClient(
       entityType: "conversation",
       entityId: input.conversationId,
       eventType: "conversation_draft_selected",
-      payload: {
+      payload: compactAuditPayload({
         actorHotelUserId: input.actorHotelUserId,
+        conversationId: input.conversationId,
         draftId: input.draftId,
-      },
+      }),
     });
 
     return {
@@ -652,12 +654,14 @@ export async function sendConversationReplyWithClient(
     entityType: "conversation",
     entityId: input.conversationId,
     eventType: "outbound_reply_send_requested",
-    payload: {
+    payload: compactAuditPayload({
       actorHotelUserId: input.actorHotelUserId,
+      conversationId: input.conversationId,
+      messageId: attempt.id,
       sourceDraftId: selectedDraftId,
       operationKey: input.operationKey,
       source: selectedDraftId ? "draft" : "manual",
-    },
+    }),
   });
 
   try {
@@ -690,13 +694,14 @@ export async function sendConversationReplyWithClient(
       entityType: "message",
       entityId: attempt.id,
       eventType: "outbound_reply_sent",
-      payload: {
+      payload: compactAuditPayload({
         actorHotelUserId: input.actorHotelUserId,
         conversationId: input.conversationId,
+        messageId: attempt.id,
         sourceDraftId: selectedDraftId,
         operationKey: input.operationKey,
         source: selectedDraftId ? "draft" : "manual",
-      },
+      }),
     });
 
     return {
@@ -719,15 +724,16 @@ export async function sendConversationReplyWithClient(
       entityType: "message",
       entityId: attempt.id,
       eventType: "outbound_reply_failed",
-      payload: {
+      payload: compactAuditPayload({
         actorHotelUserId: input.actorHotelUserId,
         conversationId: input.conversationId,
+        messageId: attempt.id,
         sourceDraftId: selectedDraftId,
         operationKey: input.operationKey,
         source: selectedDraftId ? "draft" : "manual",
         failureType: failure.failureType,
         message: failure.message,
-      },
+      }),
     });
 
     return {
