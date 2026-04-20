@@ -16,6 +16,7 @@
     "test:ph1-07": "node --experimental-strip-types ./tests/ph1-07/run-checks.ts",
     "test:ph1-08": "node --experimental-strip-types ./tests/ph1-08/run-checks.ts",
     "test:ph1-09": "node --experimental-strip-types ./tests/ph1-09/run-checks.ts",
+    "test:ph1-10": "node --experimental-strip-types ./tests/ph1-10/run-checks.ts",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
