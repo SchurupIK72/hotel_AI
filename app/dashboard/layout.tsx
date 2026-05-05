@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { signOutAction } from "@/app/(auth)/actions";
-import { getAccessContext } from "@/lib/auth/server";
+import { requireDashboardAccess } from "@/lib/auth/guards";
 
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const access = await getAccessContext();
+  const access = await requireDashboardAccess();
   const hotelLabel = access.kind === "hotel_user" ? access.hotelName ?? access.hotelId : "Internal support";
 
   return (

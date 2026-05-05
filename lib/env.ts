@@ -18,6 +18,10 @@ export function getSupabaseUrl() {
   return value;
 }
 
+export function getSupabaseServerUrl() {
+  return process.env.SUPABASE_SERVER_URL?.trim() || getSupabaseUrl();
+}
+
 export function getSupabaseAnonKey() {
   const value = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 

@@ -1,9 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
-import { getSupabaseServiceRoleKey, getSupabaseUrl } from "../env.ts";
+import { getSupabaseServerUrl, getSupabaseServiceRoleKey } from "../env.ts";
 import type { Database } from "../../types/database.ts";
 
 export function createServiceRoleSupabaseClient() {
-  return createClient<Database>(getSupabaseUrl(), getSupabaseServiceRoleKey(), {
+  return createClient<Database>(getSupabaseServerUrl(), getSupabaseServiceRoleKey(), {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

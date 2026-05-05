@@ -1,7 +1,7 @@
 import type { CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
+import { getSupabaseAnonKey, getSupabaseServerUrl } from "@/lib/env";
 import type { Database } from "@/types/database";
 
 export async function createServerSupabaseClient() {
@@ -10,7 +10,7 @@ export async function createServerSupabaseClient() {
     set: (name: string, value: string, options?: CookieOptions) => void;
   };
 
-  return createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
+  return createServerClient<Database>(getSupabaseServerUrl(), getSupabaseAnonKey(), {
     cookies: {
       getAll() {
         return cookieStore.getAll();

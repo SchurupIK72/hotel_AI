@@ -190,7 +190,8 @@ docker compose up
 In this mode:
 
 - the app runs in Docker on port `3000`
-- the app still talks to local Supabase via `.env.local`
+- the browser still uses `NEXT_PUBLIC_SUPABASE_URL` from `.env.local`
+- the app container uses `SUPABASE_SERVER_URL=http://host.docker.internal:54321` from `docker-compose.yml` for server-side Supabase requests
 
 ## Step 8: Sign in
 

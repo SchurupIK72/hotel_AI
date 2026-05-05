@@ -1,24 +1,36 @@
 import { redirect } from "next/navigation";
-import { AuthenticationRequiredError, AuthorizationError } from "@/lib/auth/errors";
+import {
+  AuthorizationError,
+  isAuthenticationRequiredError,
+  isAuthorizationError,
+} from "@/lib/auth/errors";
 import type { TelegramSettingsAccess } from "@/lib/auth/telegram-settings-access";
-import type { HotelUserAccessContext, SuperAdminAccessContext } from "@/lib/auth/types";
+import type { AccessContext, HotelUserAccessContext, SuperAdminAccessContext } from "@/lib/auth/types";
 import { getAccessContext, resolveTelegramSettingsAccess } from "@/lib/auth/server";
 
 function handleGuardFailure(error: unknown): never {
-  if (error instanceof AuthenticationRequiredError) {
+  if (isAuthenticationRequiredError(error)) {
     redirect("/sign-in");
   }
 
-  if (error instanceof AuthorizationError) {
+  if (isAuthorizationError(error)) {
     redirect("/access-denied");
   }
 
   throw error;
 }
 
+export async function requireDashboardAccess(): Promise<AccessContext> {
+  try {
+    return await getAccessContext();
+  } catch (error) {
+    handleGuardFailure(error);
+  }
+}
+
 export async function requireHotelUser(): Promise<HotelUserAccessContext> {
   try {
-    const access = await getAccessContext();
+    const access = await requireDashboardAccess();
 
     if (access.kind !== "hotel_user") {
       throw new AuthorizationError("Hotel staff access is required.");
@@ -42,7 +54,7 @@ export async function requireHotelAdmin(): Promise<HotelUserAccessContext> {
 
 export async function requireSuperAdmin(): Promise<SuperAdminAccessContext> {
   try {
-    const access = await getAccessContext();
+    const access = await requireDashboardAccess();
 
     if (access.kind !== "super_admin") {
       throw new AuthorizationError("Super admin access is required.");

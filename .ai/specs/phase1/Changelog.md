@@ -1,5 +1,13 @@
 ## 2026-05-05
 
+### Local Docker and Auth Runtime Hardening
+
+- Fixed the Docker-local Supabase runtime path so browser clients keep using `NEXT_PUBLIC_SUPABASE_URL`, while server-side code inside the app container now resolves Supabase through a dedicated server URL override in [lib/env.ts](../../lib/env.ts), [lib/supabase/server.ts](../../lib/supabase/server.ts), [lib/supabase/admin.ts](../../lib/supabase/admin.ts), and [docker-compose.yml](../../docker-compose.yml).
+- Hardened dashboard auth redirects so unauthenticated requests no longer surface a server `AuthenticationRequiredError` on `/dashboard` and now fall back cleanly to `/sign-in` via [lib/auth/errors.ts](../../lib/auth/errors.ts), [lib/auth/guards.ts](../../lib/auth/guards.ts), and [app/dashboard/layout.tsx](../../app/dashboard/layout.tsx).
+- Extended local operator guidance in [LOCAL_SETUP.md](../../LOCAL_SETUP.md) to document the browser-versus-container Supabase URL split for Docker-based app runs.
+
+## 2026-05-05
+
 ### PH1-09 - Human-Approved Outbound Reply Flow
 
 - Completed the Phase 1 outbound reply implementation in [ph1-09-approved-reply-flow.md](./ph1-09-approved-reply-flow.md), including draft-backed and manual Telegram reply sending from the inbox workspace.
