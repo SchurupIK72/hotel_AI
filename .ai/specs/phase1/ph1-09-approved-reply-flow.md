@@ -1,9 +1,10 @@
 # PH1-09 - Human-Approved Outbound Reply Flow
 
 > **Created:** 2026-04-19
+> **Completed:** 2026-05-05
 > **Phase:** Phase 1 - AI Copilot Foundation
 > **Priority:** P0
-> **Status:** In Progress
+> **Status:** Completed
 > **Depends on:** PH1-02 - Hotel Setup and Telegram Integration, PH1-04 - Conversation Workspace UI, PH1-08 - AI Draft Generation
 
 ---
@@ -631,6 +632,26 @@ Prove the outbound approval boundary, draft traceability, and failure handling b
 
 - local verification proves that draft-backed and manual replies both work end-to-end;
 - failure states are operator-safe and do not collapse into silent duplicate-send risk.
+
+## Implementation Progress
+
+Current status:
+- Stage 4 verification and reply-composer safety hardening completed on 2026-05-05
+- PH1-09 is now implemented end to end and ready for PH1-10 release-audit consumption
+
+Completed:
+- [x] extended outbound message persistence with `sent_by_hotel_user_id`, `delivery_status`, and `send_operation_key`
+- [x] added trusted draft selection, manual reply, and outbound send orchestration in the server-side reply flow
+- [x] persisted successful outbound replies into the normalized `messages` timeline with `source_draft_id` traceability
+- [x] added retryable versus ambiguous failure classification with structured outbound audit events
+- [x] wired the inbox workspace with draft-backed and manual reply composer flows
+- [x] added explicit send-state feedback, pending-state protection, and empty-reply send guards in the reply composer
+- [x] blocked blind resend after ambiguous delivery outcomes and required an explicit fresh send attempt path
+- [x] added PH1-09 helper checks via `npm.cmd run test:ph1-09`
+- [x] added PH1-09 smoke verification via `npm.cmd run verify:ph1-09`
+
+Pending implementation:
+- none
 
 ---
 

@@ -364,12 +364,18 @@ export function createConversationReplyComposerState(input: {
   const sendState = input.sendState ?? "idle";
   const selectedDraftId = resolvedDraft?.id ?? null;
   const source = selectedDraftId ? "draft" : "manual";
+  const hasReplyText = editorValue.trim().length > 0;
 
   let disabledReason: string | null = null;
   if (!input.hasActiveTelegramIntegration) {
     disabledReason = "Reply sending is unavailable until an active Telegram integration is configured.";
   } else if (!input.hasResolvableTarget) {
     disabledReason = "This conversation does not yet have a trusted Telegram target for replies.";
+  } else if (sendState === "failed_ambiguous") {
+    disabledReason =
+      "Delivery outcome could not be confirmed. Verify with the guest before starting a new send attempt.";
+  } else if (sendState === "sending") {
+    disabledReason = "A reply send is already in progress for this workspace.";
   }
 
   return {
@@ -378,7 +384,7 @@ export function createConversationReplyComposerState(input: {
     editorValue,
     source,
     sendState,
-    canSend: disabledReason == null,
+    canSend: disabledReason == null && hasReplyText,
     errorMessage:
       sendState === "failed_retryable" || sendState === "failed_ambiguous" ? input.operationMessage ?? null : null,
     successMessage: sendState === "sent" ? input.operationMessage ?? "Reply sent." : null,

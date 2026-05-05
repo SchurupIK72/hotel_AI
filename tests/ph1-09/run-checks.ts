@@ -38,7 +38,21 @@ try {
   assert.equal(draftComposer.editorValue, "We can arrange an airport transfer for tomorrow morning.");
   assert.equal(draftComposer.canSend, true);
 
-  const failureComposer = createConversationReplyComposerState({
+  const retryableFailureComposer = createConversationReplyComposerState({
+    conversationId: "conversation-1",
+    draftPanel: readyDraftPanel,
+    selectedDraftId: "draft-1",
+    replyText: "Edited final reply",
+    sendState: "failed_retryable",
+    operationMessage: "Telegram rejected the reply.",
+    hasActiveTelegramIntegration: true,
+    hasResolvableTarget: true,
+  });
+  assert.equal(retryableFailureComposer.editorValue, "Edited final reply");
+  assert.equal(retryableFailureComposer.errorMessage, "Telegram rejected the reply.");
+  assert.equal(retryableFailureComposer.canSend, true);
+
+  const ambiguousFailureComposer = createConversationReplyComposerState({
     conversationId: "conversation-1",
     draftPanel: readyDraftPanel,
     selectedDraftId: "draft-1",
@@ -48,8 +62,19 @@ try {
     hasActiveTelegramIntegration: true,
     hasResolvableTarget: true,
   });
-  assert.equal(failureComposer.editorValue, "Edited final reply");
-  assert.equal(failureComposer.errorMessage, "Please verify delivery with the guest before retrying.");
+  assert.equal(ambiguousFailureComposer.canSend, false);
+  assert.match(ambiguousFailureComposer.disabledReason ?? "", /verify with the guest/i);
+  assert.equal(ambiguousFailureComposer.errorMessage, "Please verify delivery with the guest before retrying.");
+
+  const emptyReplyComposer = createConversationReplyComposerState({
+    conversationId: "conversation-1",
+    draftPanel: { state: "empty", title: "No drafts yet", message: "Manual reply only." },
+    replyText: "   ",
+    hasActiveTelegramIntegration: true,
+    hasResolvableTarget: true,
+  });
+  assert.equal(emptyReplyComposer.canSend, false);
+  assert.equal(emptyReplyComposer.disabledReason, null);
 
   const disabledComposer = createConversationReplyComposerState({
     conversationId: "conversation-1",

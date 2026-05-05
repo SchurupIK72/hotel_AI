@@ -1,11 +1,10 @@
 import Link from "next/link";
 import type { AssignableHotelUser } from "@/lib/db/hotel-users";
+import { ReplyComposerForm } from "@/components/inbox/reply-composer-form";
 import {
   assignConversationAction,
-  clearConversationDraftSelectionAction,
   regenerateConversationDraftsAction,
   selectConversationDraftAction,
-  sendConversationReplyAction,
   updateConversationStatusAction,
 } from "@/app/dashboard/inbox/actions";
 import type {
@@ -184,6 +183,19 @@ function renderReplyComposer(
   }
 
   const sendDisabled = !composerState.canSend;
+  const resetReplyParams = new URLSearchParams();
+  if (currentFilter !== "all") {
+    resetReplyParams.set("filter", currentFilter);
+  }
+  if (composerState.selectedDraftId) {
+    resetReplyParams.set("draftId", composerState.selectedDraftId);
+  }
+  if (composerState.editorValue) {
+    resetReplyParams.set("replyText", composerState.editorValue);
+  }
+  const resetReplyHref = `/dashboard/inbox/${selectedConversation.conversation.id}${
+    resetReplyParams.size > 0 ? `?${resetReplyParams.toString()}` : ""
+  }`;
 
   return (
     <article className="meta-card stack">
@@ -199,38 +211,23 @@ function renderReplyComposer(
       {composerState.successMessage ? <p className="success-text">{composerState.successMessage}</p> : null}
       {composerState.errorMessage ? <p className="error-text">{composerState.errorMessage}</p> : null}
       {composerState.disabledReason ? <p className="body-copy">{composerState.disabledReason}</p> : null}
-      <form action={sendConversationReplyAction} className="control-form">
-        <input name="conversationId" type="hidden" value={selectedConversation.conversation.id} />
-        <input name="filter" type="hidden" value={currentFilter} />
-        <input name="selectedDraftId" type="hidden" value={composerState.selectedDraftId ?? ""} />
-        <input name="operationKey" type="hidden" value={operationKey} />
-        <label className="label-stack">
-          <span>Final reply text</span>
-          <textarea
-            className="input reply-composer-textarea"
-            defaultValue={composerState.editorValue}
-            name="replyText"
-            required
-            rows={8}
-          />
-        </label>
-        <div className="draft-meta-stack">
-          <p className="conversation-meta mono">
-            Source: {composerState.source === "draft" ? `Draft-backed (${composerState.selectedDraftId})` : "Manual reply"}
-          </p>
-          <p className="conversation-meta mono">Channel: Telegram text only</p>
-        </div>
-        <div className="reply-composer-actions">
-          {composerState.selectedDraftId ? (
-            <button className="button secondary-button" formAction={clearConversationDraftSelectionAction}>
-              Write manually
-            </button>
-          ) : null}
-          <button className="button" disabled={sendDisabled} type="submit">
-            Send reply
-          </button>
-        </div>
-      </form>
+      {sendDisabled &&
+      composerState.sendState !== "failed_ambiguous" &&
+      composerState.sendState !== "sent" &&
+      !composerState.disabledReason ? (
+        <p className="body-copy">Write a non-empty reply before sending it to the guest.</p>
+      ) : null}
+      <ReplyComposerForm
+        conversationId={selectedConversation.conversation.id}
+        currentFilter={currentFilter}
+        disabledReason={composerState.disabledReason}
+        initialReplyText={composerState.editorValue}
+        operationKey={operationKey}
+        resetReplyHref={composerState.sendState === "failed_ambiguous" ? resetReplyHref : null}
+        selectedDraftId={composerState.selectedDraftId}
+        sendState={composerState.sendState}
+        source={composerState.source}
+      />
     </article>
   );
 }
